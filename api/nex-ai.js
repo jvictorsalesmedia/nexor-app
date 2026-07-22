@@ -30,6 +30,12 @@ module.exports = async function handler(req, res) {
       return;
     }
 
+    if (parsed.type === "query") {
+      const answer = await answerQuery(supabaseUrl, anonKey, accessToken, geminiKey, message);
+      res.status(200).json({ ok: true, type: "query", summary: answer });
+      return;
+    }
+
     const summary = await appendRecord(supabaseUrl, anonKey, accessToken, parsed);
     res.status(200).json({ ok: true, type: parsed.type, summary });
   } catch (error) {
@@ -51,7 +57,7 @@ async function classifyMessage(geminiKey, text) {
   const systemPrompt = `Você interpreta mensagens curtas de texto para o Nexor, um app de organização/produtividade.
 Data e hora atual (America/Sao_Paulo): ${now}.
 
-Classifique a mensagem em um destes tipos: "task" (inclui compromissos/eventos de agenda), "lead" (oportunidade comercial nova), "finance" (lançamento financeiro, entrada ou saída de dinheiro), ou "unclear" (não deu pra entender uma ação clara).
+Classifique a mensagem em um destes tipos: "task" (inclui compromissos/eventos de agenda), "lead" (oportunidade comercial nova), "finance" (lançamento financeiro, entrada ou saída de dinheiro), "query" (uma pergunta sobre dados que já existem no sistema, ex: "quanto vou receber essa semana", "qual cliente mais gastou comigo", "quantas tarefas atrasadas eu tenho"), ou "unclear" (não deu pra entender uma ação clara).
 
 Responda SOMENTE com um JSON válido, sem texto adicional, no formato:
 {"type": "task", "data": {"title": "...", "dueDate": "YYYY-MM-DD", "time": "HH:MM", "priority": "Baixa|Média|Alta"}}
@@ -59,6 +65,8 @@ ou
 {"type": "lead", "data": {"name": "...", "business": "...", "contact": "...", "value": 0, "notes": "..."}}
 ou
 {"type": "finance", "data": {"title": "...", "type": "Receita|Despesa", "value": 0, "date": "YYYY-MM-DD", "status": "Pago|Pendente"}}
+ou
+{"type": "query", "data": {}}
 ou
 {"type": "unclear", "data": {}}
 
@@ -84,8 +92,65 @@ Datas relativas (ex: "sexta", "amanhã") devem virar data absoluta YYYY-MM-DD co
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
 
-  if (!["task", "lead", "finance", "unclear"].includes(parsed.type)) return { type: "unclear", data: {} };
+  if (!["task", "lead", "finance", "query", "unclear"].includes(parsed.type)) return { type: "unclear", data: {} };
   return { type: parsed.type, data: parsed.data || {} };
+}
+
+async function answerQuery(supabaseUrl, anonKey, accessToken, geminiKey, question) {
+  const rows = await restFetch(
+    supabaseUrl,
+    anonKey,
+    accessToken,
+    "/nexor_records?record_type=eq.setting&data->>key=eq.workspace&select=data&limit=1"
+  );
+  const db = rows?.[0]?.data?.db || {};
+  const clientNames = Object.fromEntries((db.clients || []).map(client => [client.id, client.name]));
+
+  const finance = (db.finance || []).slice(0, 300).map(item => ({
+    title: item.title,
+    type: item.type,
+    value: item.value,
+    date: item.date,
+    status: item.status,
+    cliente: clientNames[item.clientId] || ""
+  }));
+  const tasks = (db.tasks || []).slice(0, 300).map(item => ({
+    title: item.title,
+    dueDate: item.dueDate,
+    status: item.status,
+    priority: item.priority
+  }));
+  const leads = (db.leads || []).slice(0, 200).map(item => ({
+    name: item.name,
+    stage: item.stage,
+    value: item.value,
+    nextDate: item.nextDate
+  }));
+
+  const now = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  const systemPrompt = `Você é o Nex AI, assistente do Nexor (app de organização/produtividade/financeiro). Data e hora atual (America/Sao_Paulo): ${now}.
+
+Responda a pergunta do usuário SOMENTE com base nos dados JSON fornecidos abaixo — nunca invente valores. Se os dados não permitirem responder, diga isso claramente. Responda em português, direto, no máximo 3 frases, sem markdown.
+
+Lançamentos financeiros (finance): ${JSON.stringify(finance)}
+Tarefas (tasks): ${JSON.stringify(tasks)}
+Leads (leads): ${JSON.stringify(leads)}`;
+
+  const response = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent",
+    {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": geminiKey },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: question }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      })
+    }
+  );
+
+  if (!response.ok) throw new Error(`Gemini API respondeu ${response.status}: ${await response.text()}`);
+  const result = await response.json();
+  return result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Não consegui calcular isso com os dados atuais.";
 }
 
 async function appendRecord(supabaseUrl, anonKey, accessToken, parsed) {

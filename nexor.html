@@ -287,6 +287,43 @@
       padding: 0;
     }
 
+    .nex-ai-trigger {
+      position: relative;
+      overflow: visible;
+    }
+
+    .nex-ai-trigger img {
+      width: 62%;
+      height: 62%;
+      object-fit: contain;
+      filter: var(--logo-shadow);
+    }
+
+    .nex-ai-trigger .nex-ai-spark {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--bg);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 0 2px var(--bg);
+      animation: nexAiSpark 2.6s ease-in-out infinite;
+    }
+
+    .nex-ai-trigger .nex-ai-spark svg {
+      width: 10px;
+      height: 10px;
+    }
+
+    @keyframes nexAiSpark {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.75; }
+    }
+
     .auth-actions,
     .toolbar,
     .row-actions,
@@ -584,6 +621,114 @@
     @keyframes softReveal {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    .toast-stack {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: min(360px, calc(100vw - 36px));
+    }
+
+    .toast {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: 0.86rem;
+      color: var(--text);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+      animation: softReveal 220ms ease both;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .toast.leaving {
+      animation: toastLeave 180ms ease both;
+    }
+
+    .toast.success { border-left-color: #3ecf8e; }
+    .toast.error { border-left-color: #ef4444; }
+
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .donut-chart {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .donut-hole {
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      background: var(--panel);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .donut-hole strong {
+      font-size: 1.2rem;
+    }
+
+    .donut-hole span {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .donut-legend {
+      display: grid;
+      gap: 8px;
+      flex: 1 1 160px;
+      min-width: 140px;
+    }
+
+    .donut-legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.84rem;
+    }
+
+    .donut-legend-row strong {
+      margin-left: auto;
+    }
+
+    .donut-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    #nexAiStatus.nex-ai-answer {
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      color: var(--text);
+      animation: softReveal 260ms ease both;
+    }
+
+    @keyframes toastLeave {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(6px); }
     }
 
     .metric {
@@ -2189,7 +2334,10 @@
           <button id="themeBtn" class="btn icon" type="button" title="Alternar tema" data-icon="moon"></button>
           <button id="notifyBtn" class="btn icon" type="button" title="Notificações" data-icon="bell"></button>
           <span id="notifyDot" class="notification-dot hidden"></span>
-          <button id="nexAiBtn" class="btn" type="button" title="Nex AI — criar por texto" data-icon="sparkles">Nex AI</button>
+          <button id="nexAiBtn" class="btn icon nex-ai-trigger" type="button" title="Nex AI — criar ou perguntar">
+            <img src="/nexor-logo-transparent.png" alt="Nex AI" />
+            <span class="nex-ai-spark" data-icon-only="sparkles"></span>
+          </button>
           <button id="topTaskBtn" class="btn accent" type="button" data-open="task" data-icon="plus">Tarefa</button>
         </div>
       </div>
@@ -2199,6 +2347,7 @@
   </div>
 
   <div id="modalRoot"></div>
+  <div id="toastStack" class="toast-stack" aria-live="polite"></div>
 
   <script>
     const ADMIN_EMAIL = "jvgsales72@gmail.com";
@@ -2682,7 +2831,7 @@
         return true;
       } catch (error) {
         console.error(error);
-        alert("Não foi possível salvar os clientes neste navegador.");
+        toast("Não foi possível salvar os clientes neste navegador.", "error");
         return false;
       }
     }
@@ -2698,7 +2847,7 @@
         return true;
       } catch (error) {
         console.error(error);
-        alert("Não foi possível salvar os logins neste navegador. Verifique permissões de armazenamento ou espaço disponível.");
+        toast("Não foi possível salvar os logins neste navegador. Verifique permissões de armazenamento ou espaço disponível.", "error");
         return false;
       }
     }
@@ -3071,7 +3220,7 @@
 
     function openSignupRequestModal() {
       if (location.protocol === "file:") {
-        alert("O pré-cadastro funciona na URL publicada da Vercel.");
+        toast("O pré-cadastro funciona na URL publicada da Vercel.");
         return;
       }
       const modalRoot = $("#modalRoot");
@@ -3118,7 +3267,7 @@
       const submit = form.querySelector("button[type='submit']");
       const photo = formData.get("photo");
       if (!photo?.name) {
-        alert("Envie uma foto do responsável.");
+        toast("Envie uma foto do responsável.", "error");
         return;
       }
       submit.disabled = true;
@@ -3143,7 +3292,7 @@
         closeModal();
         $("#authError").textContent = "Pré-cadastro enviado. Aguarde a aprovação do administrador.";
       } catch (error) {
-        alert(error.message || "Não foi possível enviar o pré-cadastro.");
+        toast(error.message || "Não foi possível enviar o pré-cadastro.", "error");
       } finally {
         submit.disabled = false;
         submit.textContent = "Enviar pré-cadastro";
@@ -3176,7 +3325,7 @@
 
     async function handleForgotPassword() {
       if (!cloudEnabled()) {
-        alert("Nexor Cloud não está ativo neste ambiente.");
+        toast("Nexor Cloud não está ativo neste ambiente.", "error");
         return;
       }
       const suggestion = $("#email").value.trim();
@@ -3192,10 +3341,10 @@
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || "Não foi possível redefinir a senha.");
         $("#authError").textContent = "";
-        alert("Se esse email/usuário existir, uma nova senha provisória foi enviada por email.");
+        toast("Se esse email/usuário existir, uma nova senha provisória foi enviada por email.", "success");
       } catch (error) {
         console.error(error);
-        alert(error.message || "Não foi possível redefinir a senha.");
+        toast(error.message || "Não foi possível redefinir a senha.", "error");
       }
     }
 
@@ -3460,8 +3609,18 @@
       const balance = revenue - expense;
       const habitDone = db.habits.filter(habit => isHabitDoneOn(habit, today())).length;
       const habitTotal = db.habits.length;
+      const leadsBySource = Object.entries(
+        db.leads.reduce((acc, lead) => {
+          const key = lead.source || "Outros";
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {})
+      ).sort((a, b) => b[1] - a[1]).map(([label, value]) => ({ label, value }));
+      const receivable = sum(db.finance.filter(item => item.type === "Receita" && item.status !== "Pago").map(item => item.value));
+      const payable = sum(db.finance.filter(item => item.type === "Despesa" && item.status !== "Pago").map(item => item.value));
+      const firstName = escapeHtml((currentUser.name || "").split(" ")[0] || "");
       return `
-        ${moduleHead("Painel do dia", "Prioridades, agenda, projetos e saldo em uma única leitura.", "")}
+        ${moduleHead(`Bem-vindo${firstName ? `, ${firstName}` : ""} 👋`, "Aqui está o resumo da sua operação hoje.", "")}
         <div class="dashboard-stage">
           <div class="grid metrics">
             ${metric("Prioridades", pending.length, `${late.length} atrasadas • ${done.length} concluídas`, "check-square", pending.length ? "gold" : "success")}
@@ -3497,6 +3656,26 @@
                   return barRow(day, count, max, `${count} tarefa${count === 1 ? "" : "s"}`);
                 }).join("")}
               </div>
+            </section>
+          </div>
+          <div class="grid two dashboard-row">
+            <section class="panel">
+              <div class="section-title">
+                <h2>Leads por origem</h2>
+                <span class="chip">${db.leads.length} total</span>
+              </div>
+              ${donutChart(leadsBySource)}
+            </section>
+            <section class="panel">
+              <div class="section-title">
+                <h2>Resumo financeiro</h2>
+                <span class="chip">Pendentes</span>
+              </div>
+              <div class="grid two" style="gap:10px">
+                <div class="list-row"><div><strong>Contas a receber</strong><div class="meta">Receita pendente</div></div><span class="chip success">${money(receivable)}</span></div>
+                <div class="list-row"><div><strong>Contas a pagar</strong><div class="meta">Despesa pendente</div></div><span class="chip danger">${money(payable)}</span></div>
+              </div>
+              ${minimalLineChart(cashFlowForecast(14), "saldo (14d)", Array.from({ length: 14 }, (_, i) => dateText(addDays(i))))}
             </section>
           </div>
           <div class="grid three dashboard-row">
@@ -3952,6 +4131,39 @@
       return `<div class="save-notice danger">Modo local ativo: usuários criados aqui ficariam somente neste navegador. Para acessar em outro dispositivo, abra a URL publicada na Vercel com as variáveis do Supabase configuradas.</div>`;
     }
 
+    function cashFlowForecast(horizonDays = 30) {
+      const days = Array.from({ length: horizonDays }, (_, i) => addDays(i));
+      let running = 0;
+      return days.map(day => {
+        const dayItems = db.finance.filter(item => item.status === "Pendente" && item.date === day);
+        running += sum(dayItems.filter(item => item.type === "Receita").map(item => item.value));
+        running -= sum(dayItems.filter(item => item.type === "Despesa").map(item => item.value));
+        return running;
+      });
+    }
+
+    function cashFlowPanel() {
+      const horizon = 30;
+      const days = Array.from({ length: horizon }, (_, i) => addDays(i));
+      const forecast = cashFlowForecast(horizon);
+      const negativeIndex = forecast.findIndex(value => value < 0);
+      const labels = days.map(day => dateText(day));
+      const statusText = negativeIndex === -1
+        ? "Saldo previsto permanece positivo nos próximos 30 dias."
+        : `Saldo previsto fica negativo a partir de ${dateText(days[negativeIndex])}.`;
+      return `
+        <div class="panel" style="margin-bottom:14px">
+          <div class="section-title">
+            <h2>Previsão de saldo (30 dias)</h2>
+            <span class="chip ${negativeIndex === -1 ? "success" : "danger"}">${negativeIndex === -1 ? "Sob controle" : "Atenção"}</span>
+          </div>
+          <p class="muted">Projeção com base nos lançamentos pendentes já cadastrados.</p>
+          ${minimalLineChart(forecast, "saldo", labels)}
+          <p class="meta">${statusText}</p>
+        </div>
+      `;
+    }
+
     function renderClients() {
       return `
         ${moduleHead("Clientes", "Cadastro, contatos, projetos vinculados, pagamentos e histórico.", canManage() ? '<button class="btn accent" type="button" data-open="client" data-icon="plus">Novo cliente</button>' : "")}
@@ -4052,6 +4264,7 @@
           ${metric("Lucro previsto", money(revenue - expense), `${pending.length} pendentes`, "bar-chart-3", revenue - expense >= 0 ? "accent" : "danger")}
           ${metric("Pagamentos pendentes", pending.length, "A vencer ou atrasados", "bell", pending.length ? "gold" : "success")}
         </div>
+        ${cashFlowPanel()}
         <div class="table-wrap">
           <table>
             <thead><tr><th>Lançamento</th><th>Tipo</th><th>Valor</th><th>Data</th><th>Vínculo</th><th>Status</th><th>Ações</th></tr></thead>
@@ -4497,6 +4710,35 @@
       return weekDays[(new Date().getDay() + 6) % 7];
     }
 
+    function donutChart(segments) {
+      const clean = (segments || []).filter(item => Number(item.value) > 0);
+      const total = sum(clean.map(item => item.value)) || 1;
+      let cumulative = 0;
+      const stops = clean.map((item, index) => {
+        const start = (cumulative / total) * 360;
+        cumulative += Number(item.value);
+        const end = (cumulative / total) * 360;
+        const opacity = Math.max(20, 92 - index * 16);
+        return `color-mix(in srgb, var(--accent) ${opacity}%, transparent) ${start.toFixed(1)}deg ${end.toFixed(1)}deg`;
+      }).join(", ");
+      return `
+        <div class="donut-wrap">
+          <div class="donut-chart" style="background: conic-gradient(${stops || "var(--line) 0deg 360deg"})">
+            <div class="donut-hole"><strong>${clean.length ? total : 0}</strong><span>total</span></div>
+          </div>
+          <div class="donut-legend">
+            ${clean.map((item, index) => `
+              <div class="donut-legend-row">
+                <span class="donut-dot" style="opacity:${Math.max(0.2, 0.92 - index * 0.16)}"></span>
+                <span>${escapeHtml(item.label)}</span>
+                <strong>${item.value}</strong>
+              </div>
+            `).join("") || emptyInline("Sem dados ainda.")}
+          </div>
+        </div>
+      `;
+    }
+
     function minimalLineChart(values, label = "", labels = []) {
       const clean = values.length ? values.map(value => Number(value || 0)) : [0, 0, 0, 0, 0, 0, 0];
       const max = Math.max(1, ...clean);
@@ -4837,9 +5079,22 @@
       $("#modalRoot").innerHTML = "";
     }
 
+    function toast(message, type = "info") {
+      const stack = $("#toastStack");
+      if (!stack || !message) return;
+      const el = document.createElement("div");
+      el.className = `toast ${type}`;
+      el.textContent = message;
+      stack.appendChild(el);
+      setTimeout(() => {
+        el.classList.add("leaving");
+        setTimeout(() => el.remove(), 200);
+      }, 4200);
+    }
+
     function openNexAiModal() {
       if (!cloudEnabled()) {
-        alert("Nex AI precisa do Nexor Cloud ativo.");
+        toast("Nex AI precisa do Nexor Cloud ativo.", "error");
         return;
       }
       const modalRoot = $("#modalRoot");
@@ -4849,14 +5104,14 @@
             <div class="modal-head">
               <div>
                 <h2>Nex AI</h2>
-                <p class="muted">Descreva em texto livre — a IA cria a tarefa, lead ou lançamento pra você.</p>
+                <p class="muted">Descreva em texto livre pra criar, ou pergunte sobre seus dados.</p>
               </div>
               <button class="btn icon" type="button" data-close-modal title="Fechar">×</button>
             </div>
             <div class="form-grid">
               <div class="field wide">
-                <label for="nexAiMessage">O que você quer registrar?</label>
-                <textarea id="nexAiMessage" name="message" rows="3" placeholder="Ex: reunião com cliente X sexta 15h / recebi 400 do cliente Y" required></textarea>
+                <label for="nexAiMessage">O que você quer fazer ou saber?</label>
+                <textarea id="nexAiMessage" name="message" rows="3" placeholder="Ex: reunião com cliente X sexta 15h / recebi 400 do cliente Y / quanto vou receber essa semana?" required></textarea>
               </div>
             </div>
             <p id="nexAiStatus" class="muted"></p>
@@ -4876,11 +5131,13 @@
 
     async function submitNexAiMessage(event) {
       event.preventDefault();
-      const message = $("#nexAiMessage").value.trim();
+      const messageInput = $("#nexAiMessage");
+      const message = messageInput.value.trim();
       if (!message) return;
       const statusEl = $("#nexAiStatus");
       const submitBtn = $("#nexAiSubmit");
       submitBtn.disabled = true;
+      statusEl.classList.remove("nex-ai-answer");
       statusEl.textContent = "Pensando...";
       try {
         const response = await fetch("/api/nex-ai", {
@@ -4898,10 +5155,18 @@
           submitBtn.disabled = false;
           return;
         }
+        if (result.type === "query") {
+          statusEl.classList.add("nex-ai-answer");
+          statusEl.textContent = result.summary || "Não consegui calcular isso.";
+          submitBtn.disabled = false;
+          messageInput.value = "";
+          messageInput.focus();
+          return;
+        }
         await loadCloudDb();
         closeModal();
         renderApp();
-        alert(result.summary || "Registro criado com sucesso.");
+        toast(result.summary || "Registro criado com sucesso.", "success");
       } catch (error) {
         console.error(error);
         statusEl.textContent = error.message || "Não foi possível processar a mensagem.";
@@ -5132,7 +5397,7 @@
       const paymentProof = fileName(formData, "paymentProof");
 
       if (entity === "employee" && Number(data.absenceCount || 0) > 0 && data.absenceReason === "Doença" && !certificate && !existing?.certificateName) {
-        alert("Para falta por doença, anexe o atestado médico.");
+        toast("Para falta por doença, anexe o atestado médico.", "error");
         return;
       }
 
@@ -5362,7 +5627,7 @@
         accessNotice = readableError(error, "Nao foi possivel alterar sua senha.");
         renderApp();
         return;
-        alert(error.message || "Não foi possível alterar sua senha.");
+        toast(error.message || "Não foi possível alterar sua senha.", "error");
       }
     }
 
@@ -5478,17 +5743,17 @@
       const existing = platformClients.find(item => item.id === id) || {};
       const payload = clientPayloadFromForm(new FormData(event.currentTarget), existing);
       if (!payload.businessName || !payload.responsibleName || !payload.email || !payload.accessUsername) {
-        alert("Preencha negócio, responsável, e-mail e usuário de acesso.");
+        toast("Preencha negócio, responsável, e-mail e usuário de acesso.", "error");
         return;
       }
 
       if (!cloudEnabled()) {
-        alert("Nexor Cloud não está ativo. Este login ficaria salvo apenas neste navegador. Publique na Vercel, configure as variáveis do Supabase e abra a URL publicada para criar usuários com acesso em qualquer dispositivo.");
+        toast("Nexor Cloud não está ativo. Este login ficaria salvo apenas neste navegador. Publique na Vercel, configure as variáveis do Supabase e abra a URL publicada para criar usuários com acesso em qualquer dispositivo.", "error");
         return;
       }
 
       if (!cloudSession?.access_token) {
-        alert("Sua sessão atual não está autenticada no Supabase. Saia e entre novamente pela URL publicada da Vercel antes de criar ou editar usuários.");
+        toast("Sua sessão atual não está autenticada no Supabase. Saia e entre novamente pela URL publicada da Vercel antes de criar ou editar usuários.", "error");
         return;
       }
 
@@ -5502,14 +5767,14 @@
         renderApp();
       } catch (error) {
         console.error(error);
-        alert(error.message || "Não foi possível salvar o usuário no Supabase.");
+        toast(error.message || "Não foi possível salvar o usuário no Supabase.", "error");
       }
     }
 
     async function saveLocalClientAccount(payload, id = "") {
       const duplicate = platformClients.find(client => client.id !== id && [client.email, client.accessUsername, client.slug].some(value => [payload.email, payload.accessUsername, payload.slug].includes(value)));
       if (duplicate) {
-        alert("Já existe cliente com este e-mail, usuário ou slug.");
+        toast("Já existe cliente com este e-mail, usuário ou slug.", "error");
         return;
       }
       let authUserId = payload.authUserId;
@@ -5630,7 +5895,7 @@
         accessNotice = `Email de redefinição enviado para ${client.email}.`;
       } catch (error) {
         console.error(error);
-        alert(error.message || "Não foi possível enviar o email.");
+        toast(error.message || "Não foi possível enviar o email.", "error");
       }
       renderApp();
     }
@@ -5686,7 +5951,7 @@
         $("#modalRoot dialog")?.close();
         renderApp();
       } catch (error) {
-        alert(error.message || "Não foi possível aprovar o pré-cadastro.");
+        toast(error.message || "Não foi possível aprovar o pré-cadastro.", "error");
       }
     }
 
@@ -5698,7 +5963,7 @@
         accessNotice = "Pré-cadastro reprovado.";
         renderApp();
       } catch (error) {
-        alert(error.message || "Não foi possível reprovar o pré-cadastro.");
+        toast(error.message || "Não foi possível reprovar o pré-cadastro.", "error");
       }
     }
 
@@ -5710,7 +5975,7 @@
       const email = String(formData.get("email")).trim().toLowerCase();
       const plainPassword = String(formData.get("password"));
       if (!name || !email || !plainPassword) {
-        alert("Preencha nome, e-mail e senha para criar o login.");
+        toast("Preencha nome, e-mail e senha para criar o login.", "error");
         return;
       }
       if (cloudEnabled() && cloudSession?.access_token) {
@@ -5731,12 +5996,12 @@
           return;
         } catch (error) {
           console.error(error);
-          alert("Não foi possível criar o login no Supabase. Confira se a Edge Function nexor-admin-user foi publicada e se sua conta é admin.");
+          toast("Não foi possível criar o login no Supabase. Confira se a Edge Function nexor-admin-user foi publicada e se sua conta é admin.", "error");
           return;
         }
       }
       if (users.some(user => user.email.toLowerCase() === email)) {
-        alert("Este e-mail já existe.");
+        toast("Este e-mail já existe.", "error");
         return;
       }
       const user = {
@@ -5775,7 +6040,7 @@
       const user = users.find(item => item.id === id);
       if (!user || user.email === ADMIN_EMAIL) return;
       if (user.plainPassword) {
-        alert(`Senha de ${user.email}: ${user.plainPassword}`);
+        toast(`Senha de ${user.email}: ${user.plainPassword}`);
         return;
       }
       if (cloudEnabled()) {
@@ -5793,7 +6058,7 @@
       const newPassword = prompt(`Nova senha para ${user.email}:`);
       if (newPassword === null) return;
       if (newPassword.length < 6) {
-        alert("Use uma senha com pelo menos 6 caracteres.");
+        toast("Use uma senha com pelo menos 6 caracteres.", "error");
         return;
       }
       if (cloudEnabled() && cloudSession?.access_token) {
@@ -5804,7 +6069,7 @@
           renderApp();
         } catch (error) {
           console.error(error);
-          alert("Não foi possível alterar a senha no Supabase.");
+          toast("Não foi possível alterar a senha no Supabase.", "error");
         }
         return;
       }
@@ -5812,7 +6077,7 @@
       user.plainPassword = newPassword;
       user.passwordUpdatedAt = today();
       saveUsers();
-      alert("Senha atualizada. Agora ela poderá ser visualizada pelo botão Ver.");
+      toast("Senha atualizada. Agora ela poderá ser visualizada pelo botão Ver.", "success");
       renderApp();
     }
 
@@ -5838,7 +6103,7 @@
           renderApp();
         } catch (error) {
           console.error(error);
-          alert("Não foi possível alterar o status no Supabase.");
+          toast("Não foi possível alterar o status no Supabase.", "error");
         }
         return;
       }
@@ -5862,7 +6127,7 @@
           renderApp();
         } catch (error) {
           console.error(error);
-          alert("Não foi possível remover o usuário no Supabase.");
+          toast("Não foi possível remover o usuário no Supabase.", "error");
         }
         return;
       }
@@ -5948,7 +6213,7 @@
     function connectGoogleCalendar() {
       db.calendar ||= { googleClientId: "", connected: false, lastSync: "" };
       if (!db.calendar.googleClientId) {
-        alert("Para conexão OAuth real, informe o Google OAuth Client ID em Configurações. Enquanto isso, use a exportação .ics ou o botão Abrir Google.");
+        toast("Para conexão OAuth real, informe o Google OAuth Client ID em Configurações. Enquanto isso, use a exportação .ics ou o botão Abrir Google.");
         activeModule = "settings";
         renderApp();
         return;
@@ -5957,7 +6222,7 @@
       db.calendar.lastSync = new Date().toISOString();
       logActivity("Google Calendar preparado para conexão");
       saveDb();
-      alert("Client ID salvo. Em uma publicação web com origem autorizada no Google Cloud, esta tela já fica pronta para iniciar o fluxo OAuth.");
+      toast("Client ID salvo. Em uma publicação web com origem autorizada no Google Cloud, esta tela já fica pronta para iniciar o fluxo OAuth.");
       renderApp();
     }
 
@@ -5995,7 +6260,7 @@
 
     boot().catch(error => {
       console.error(error);
-      alert("Não foi possível iniciar o Nexor com os dados salvos. Recarregue a página e tente novamente.");
+      toast("Não foi possível iniciar o Nexor com os dados salvos. Recarregue a página e tente novamente.", "error");
     });
   </script>
 </body>
