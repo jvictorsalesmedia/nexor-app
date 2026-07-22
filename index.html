@@ -731,13 +731,57 @@
       flex: 0 0 auto;
     }
 
-    #nexAiStatus.nex-ai-answer {
-      background: color-mix(in srgb, var(--accent) 7%, transparent);
-      border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+    .nex-ai-modal {
+      width: min(560px, 92vw);
+    }
+
+    .nex-ai-thread {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 340px;
+      overflow-y: auto;
+      padding: 4px 2px;
+      margin: 10px 0;
+    }
+
+    .nex-ai-empty {
+      text-align: center;
+      padding: 20px 10px;
+      font-size: 0.86rem;
+    }
+
+    .nex-ai-msg {
+      display: flex;
+      animation: softReveal 220ms ease both;
+    }
+
+    .nex-ai-msg.user {
+      justify-content: flex-end;
+    }
+
+    .nex-ai-msg.assistant {
+      justify-content: flex-start;
+    }
+
+    .nex-ai-bubble {
+      max-width: 82%;
+      padding: 9px 12px;
       border-radius: var(--radius);
-      padding: 10px 12px;
+      font-size: 0.86rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    .nex-ai-msg.user .nex-ai-bubble {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .nex-ai-msg.assistant .nex-ai-bubble {
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
       color: var(--text);
-      animation: softReveal 260ms ease both;
     }
 
     @keyframes toastLeave {
@@ -3068,6 +3112,7 @@
       db.team ||= [];
       db.activity ||= [];
       db.calendar ||= { googleClientId: "", connected: false, lastSync: "" };
+      db.nexAiHistory ||= [];
       if (db.brandVersion !== "nexor-motion-v2") {
         db.theme = "dark";
         db.brandVersion = "nexor-motion-v2";
@@ -3161,6 +3206,7 @@
       db.team ||= [];
       db.activity ||= [];
       db.calendar ||= { googleClientId: "", connected: false, lastSync: "" };
+      db.nexAiHistory ||= [];
       db.theme ||= "dark";
       db.brandVersion ||= "nexor-motion-v2";
     }
@@ -5190,26 +5236,26 @@
         toast("Nex AI precisa do Nexor Cloud ativo.", "error");
         return;
       }
+      db.nexAiHistory ||= [];
       const modalRoot = $("#modalRoot");
       modalRoot.innerHTML = `
         <dialog>
-          <form class="modal" method="dialog" id="nexAiForm">
+          <form class="modal nex-ai-modal" method="dialog" id="nexAiForm">
             <div class="modal-head">
               <div>
                 <h2>Nex AI</h2>
-                <p class="muted">Descreva em texto livre pra criar, ou pergunte sobre seus dados.</p>
+                <p class="muted">Crie tarefas, leads e lançamentos, pergunte sobre seus dados ou peça um relatório em PDF.</p>
               </div>
               <button class="btn icon" type="button" data-close-modal title="Fechar">×</button>
             </div>
+            <div id="nexAiThread" class="nex-ai-thread">${renderNexAiThread()}</div>
             <div class="form-grid">
               <div class="field wide">
-                <label for="nexAiMessage">O que você quer fazer ou saber?</label>
-                <textarea id="nexAiMessage" name="message" rows="3" placeholder="Ex: reunião com cliente X sexta 15h / recebi 400 do cliente Y / quanto vou receber essa semana?" required></textarea>
+                <textarea id="nexAiMessage" name="message" rows="2" placeholder="Ex: reunião com cliente X sexta 15h / quanto vou receber essa semana? / emitir relatório dos meus gastos do mês passado" required></textarea>
               </div>
             </div>
-            <p id="nexAiStatus" class="muted"></p>
             <div class="modal-actions">
-              <button class="btn" type="button" data-close-modal>Cancelar</button>
+              <button class="btn" type="button" data-close-modal>Fechar</button>
               <button class="btn accent" type="submit" id="nexAiSubmit" data-icon="sparkles">Enviar</button>
             </div>
           </form>
@@ -5220,6 +5266,53 @@
       if (dialog.showModal) dialog.showModal();
       $$("[data-close-modal]", modalRoot).forEach(button => button.addEventListener("click", closeModal));
       $("#nexAiForm").addEventListener("submit", submitNexAiMessage);
+      scrollNexAiThreadToBottom();
+    }
+
+    function renderNexAiThread() {
+      if (!db.nexAiHistory.length) {
+        return `<div class="nex-ai-empty muted">Nenhuma conversa ainda. Pergunte algo, peça um relatório ou descreva o que quer criar.</div>`;
+      }
+      return db.nexAiHistory.map(item => `
+        <div class="nex-ai-msg ${item.role}">
+          <div class="nex-ai-bubble">${escapeHtml(item.content)}</div>
+        </div>
+      `).join("");
+    }
+
+    function scrollNexAiThreadToBottom() {
+      const thread = $("#nexAiThread");
+      if (thread) thread.scrollTop = thread.scrollHeight;
+    }
+
+    function pushNexAiMessage(role, content) {
+      db.nexAiHistory.push({ role, content, at: new Date().toISOString() });
+      db.nexAiHistory = db.nexAiHistory.slice(-60);
+      saveDb();
+      const thread = $("#nexAiThread");
+      if (!thread) return;
+      thread.innerHTML = renderNexAiThread();
+      scrollNexAiThreadToBottom();
+      if (role === "assistant") {
+        const bubbles = $$(".nex-ai-bubble", thread);
+        const lastBubble = bubbles[bubbles.length - 1];
+        if (lastBubble) typeText(lastBubble, content);
+      }
+    }
+
+    function downloadPdfFromBase64(base64, filename) {
+      const bytes = atob(base64);
+      const buffer = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) buffer[i] = bytes.charCodeAt(i);
+      const blob = new Blob([buffer], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename || "relatorio.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
     }
 
     async function submitNexAiMessage(event) {
@@ -5227,11 +5320,23 @@
       const messageInput = $("#nexAiMessage");
       const message = messageInput.value.trim();
       if (!message) return;
-      const statusEl = $("#nexAiStatus");
       const submitBtn = $("#nexAiSubmit");
       submitBtn.disabled = true;
-      statusEl.classList.remove("nex-ai-answer");
-      statusEl.textContent = "Pensando...";
+      messageInput.value = "";
+
+      // Mostra a mensagem do usuário e um "pensando..." só na tela, sem
+      // persistir ainda — evita gravar duas vezes em sequência rápida e
+      // colidir com a gravação que o servidor faz ao criar um registro.
+      const history = db.nexAiHistory.slice(-12).map(item => ({ role: item.role, content: item.content }));
+      const thread = $("#nexAiThread");
+      if (thread) {
+        thread.innerHTML = renderNexAiThread() + `
+          <div class="nex-ai-msg user"><div class="nex-ai-bubble">${escapeHtml(message)}</div></div>
+          <div class="nex-ai-msg assistant"><div class="nex-ai-bubble">Pensando...</div></div>
+        `;
+        scrollNexAiThreadToBottom();
+      }
+
       try {
         const response = await fetch("/api/nex-ai", {
           method: "POST",
@@ -5239,31 +5344,34 @@
             "Content-Type": "application/json",
             Authorization: `Bearer ${cloudSession?.access_token || ""}`
           },
-          body: JSON.stringify({ message })
+          body: JSON.stringify({ message, history })
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || "Não foi possível processar a mensagem.");
-        if (result.type === "unclear") {
-          statusEl.textContent = result.summary || "Não entendi essa mensagem. Pode reformular?";
-          submitBtn.disabled = false;
+
+        if (result.type === "task" || result.type === "lead" || result.type === "finance") {
+          await loadCloudDb();
+        }
+        pushNexAiMessage("user", message);
+        pushNexAiMessage("assistant", result.summary || "Feito.");
+
+        if (result.type === "report" && result.pdfBase64) {
+          downloadPdfFromBase64(result.pdfBase64, result.filename);
+        }
+        if (result.type === "task" || result.type === "lead" || result.type === "finance") {
+          renderApp();
+          openNexAiModal();
+          toast(result.summary || "Registro criado com sucesso.", "success");
           return;
         }
-        if (result.type === "query") {
-          statusEl.classList.add("nex-ai-answer");
-          typeText(statusEl, result.summary || "Não consegui calcular isso.");
-          submitBtn.disabled = false;
-          messageInput.value = "";
-          messageInput.focus();
-          return;
-        }
-        await loadCloudDb();
-        closeModal();
-        renderApp();
-        toast(result.summary || "Registro criado com sucesso.", "success");
+        submitBtn.disabled = false;
+        messageInput.focus();
       } catch (error) {
         console.error(error);
-        statusEl.textContent = error.message || "Não foi possível processar a mensagem.";
+        pushNexAiMessage("user", message);
+        pushNexAiMessage("assistant", error.message || "Não foi possível processar a mensagem.");
         submitBtn.disabled = false;
+        messageInput.focus();
       }
     }
 
