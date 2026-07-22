@@ -5095,6 +5095,7 @@
       };
       const record = { id: existing?.id || uid(entity), ...builders[entity]() };
       const collection = collectionFor(entity);
+      const isNew = !existing;
       if (existing) {
         const index = collection.findIndex(item => item.id === id);
         collection[index] = record;
@@ -5106,6 +5107,14 @@
       saveDb();
       closeModal();
       renderApp();
+
+      // Ao criar um evento novo na aba Agenda (module "planner"), abre direto
+      // a tela do Google Calendar já preenchida — só falta a pessoa clicar em
+      // Salvar do lado do Google (nenhuma permissão/OAuth é necessária pra
+      // esse link funcionar).
+      if (entity === "task" && isNew && activeModule === "planner" && record.dueDate) {
+        window.open(googleCalendarAddUrl(record), "_blank", "noopener,noreferrer");
+      }
     }
 
     function collectionFor(entity) {
@@ -5878,16 +5887,20 @@
       renderApp();
     }
 
-    function openGoogleCalendar() {
-      const nextTask = visibleTasks().find(task => task.dueDate) || {};
-      const start = `${String(nextTask.dueDate || today()).replace(/-/g, "")}T${String(nextTask.time || "09:00").replace(":", "")}00`;
-      const end = `${String(nextTask.dueDate || today()).replace(/-/g, "")}T${String(Math.min(23, Number(String(nextTask.time || "09:00").slice(0, 2)) + 1)).padStart(2, "0")}${String(nextTask.time || "09:00").slice(3, 5)}00`;
+    function googleCalendarAddUrl(task) {
+      const start = `${String(task.dueDate || today()).replace(/-/g, "")}T${String(task.time || "09:00").replace(":", "")}00`;
+      const end = `${String(task.dueDate || today()).replace(/-/g, "")}T${String(Math.min(23, Number(String(task.time || "09:00").slice(0, 2)) + 1)).padStart(2, "0")}${String(task.time || "09:00").slice(3, 5)}00`;
       const url = new URL("https://calendar.google.com/calendar/render");
       url.searchParams.set("action", "TEMPLATE");
-      url.searchParams.set("text", nextTask.title || "Evento Nexor");
+      url.searchParams.set("text", task.title || "Evento Nexor");
       url.searchParams.set("dates", `${start}/${end}`);
-      url.searchParams.set("details", nextTask.description || "Criado no Nexor");
-      window.open(url.toString(), "_blank", "noopener,noreferrer");
+      url.searchParams.set("details", task.description || "Criado no Nexor");
+      return url.toString();
+    }
+
+    function openGoogleCalendar() {
+      const nextTask = visibleTasks().find(task => task.dueDate) || {};
+      window.open(googleCalendarAddUrl(nextTask), "_blank", "noopener,noreferrer");
     }
 
     function download(filename, content, type) {
