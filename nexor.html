@@ -2189,6 +2189,7 @@
           <button id="themeBtn" class="btn icon" type="button" title="Alternar tema" data-icon="moon"></button>
           <button id="notifyBtn" class="btn icon" type="button" title="Notificações" data-icon="bell"></button>
           <span id="notifyDot" class="notification-dot hidden"></span>
+          <button id="nexAiBtn" class="btn" type="button" title="Nex AI — criar por texto" data-icon="sparkles">Nex AI</button>
           <button id="topTaskBtn" class="btn accent" type="button" data-open="task" data-icon="plus">Tarefa</button>
         </div>
       </div>
@@ -3018,6 +3019,7 @@
         saveDb();
         renderApp();
       });
+      $("#nexAiBtn").addEventListener("click", openNexAiModal);
       $("#globalSearch").addEventListener("input", renderSearch);
       document.addEventListener("click", event => {
         const open = event.target.closest("[data-open]");
@@ -4833,6 +4835,78 @@
 
     function closeModal() {
       $("#modalRoot").innerHTML = "";
+    }
+
+    function openNexAiModal() {
+      if (!cloudEnabled()) {
+        alert("Nex AI precisa do Nexor Cloud ativo.");
+        return;
+      }
+      const modalRoot = $("#modalRoot");
+      modalRoot.innerHTML = `
+        <dialog>
+          <form class="modal" method="dialog" id="nexAiForm">
+            <div class="modal-head">
+              <div>
+                <h2>Nex AI</h2>
+                <p class="muted">Descreva em texto livre — a IA cria a tarefa, lead ou lançamento pra você.</p>
+              </div>
+              <button class="btn icon" type="button" data-close-modal title="Fechar">×</button>
+            </div>
+            <div class="form-grid">
+              <div class="field wide">
+                <label for="nexAiMessage">O que você quer registrar?</label>
+                <textarea id="nexAiMessage" name="message" rows="3" placeholder="Ex: reunião com cliente X sexta 15h / recebi 400 do cliente Y" required></textarea>
+              </div>
+            </div>
+            <p id="nexAiStatus" class="muted"></p>
+            <div class="modal-actions">
+              <button class="btn" type="button" data-close-modal>Cancelar</button>
+              <button class="btn accent" type="submit" id="nexAiSubmit" data-icon="sparkles">Enviar</button>
+            </div>
+          </form>
+        </dialog>
+      `;
+      applyIcons(modalRoot);
+      const dialog = $("dialog", modalRoot);
+      if (dialog.showModal) dialog.showModal();
+      $$("[data-close-modal]", modalRoot).forEach(button => button.addEventListener("click", closeModal));
+      $("#nexAiForm").addEventListener("submit", submitNexAiMessage);
+    }
+
+    async function submitNexAiMessage(event) {
+      event.preventDefault();
+      const message = $("#nexAiMessage").value.trim();
+      if (!message) return;
+      const statusEl = $("#nexAiStatus");
+      const submitBtn = $("#nexAiSubmit");
+      submitBtn.disabled = true;
+      statusEl.textContent = "Pensando...";
+      try {
+        const response = await fetch("/api/nex-ai", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${cloudSession?.access_token || ""}`
+          },
+          body: JSON.stringify({ message })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Não foi possível processar a mensagem.");
+        if (result.type === "unclear") {
+          statusEl.textContent = result.summary || "Não entendi essa mensagem. Pode reformular?";
+          submitBtn.disabled = false;
+          return;
+        }
+        await loadCloudDb();
+        closeModal();
+        renderApp();
+        alert(result.summary || "Registro criado com sucesso.");
+      } catch (error) {
+        console.error(error);
+        statusEl.textContent = error.message || "Não foi possível processar a mensagem.";
+        submitBtn.disabled = false;
+      }
     }
 
     function entityLabel(entity) {
