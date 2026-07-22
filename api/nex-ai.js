@@ -37,6 +37,12 @@ module.exports = async function handler(req, res) {
       return;
     }
 
+    if (parsed.type === "chat") {
+      const answer = await answerChat(geminiKey, message, history);
+      res.status(200).json({ ok: true, type: "chat", summary: answer });
+      return;
+    }
+
     if (parsed.type === "report") {
       const report = await generateReport(supabaseUrl, anonKey, accessToken, parsed);
       res.status(200).json({ ok: true, type: "report", summary: report.summary, pdfBase64: report.pdfBase64, filename: report.filename });
@@ -76,14 +82,18 @@ ${historyAsText(history)}
 
 Classifique a ÚLTIMA mensagem do usuário em um destes tipos:
 - "task": inclui compromissos/eventos de agenda.
+- "habit": pedido pra criar um hábito/rotina recorrente (ex: "quero criar o hábito de beber água", "me ajuda a acompanhar treino toda segunda").
 - "lead": oportunidade comercial nova.
 - "finance": lançamento financeiro, entrada ou saída de dinheiro.
-- "query": pergunta sobre dados que já existem no sistema (ex: "quanto vou receber essa semana", "qual cliente mais gastou comigo").
+- "query": pergunta sobre dados que já existem no sistema do usuário (ex: "quanto vou receber essa semana", "qual cliente mais gastou comigo").
 - "report": pedido explícito de relatório/documento/PDF (ex: "emitir relatório dos meus gastos do mês passado", "gera um PDF do financeiro de junho", "quero um relatório de tarefas concluídas essa semana").
-- "unclear": não deu pra entender uma ação clara.
+- "chat": qualquer outra coisa — conversa, pedido de conselho, dúvida sobre qualquer assunto (marketing, gestão, produtividade, o que for), brainstorm, ajuda pra escrever algo, etc. Esse é o modo padrão quando não é claramente uma das ações acima.
+- "unclear": mensagem vazia ou impossível de entender (raro — prefira "chat" quando houver qualquer conteúdo interpretável).
 
 Responda SOMENTE com um JSON válido, sem texto adicional, no formato:
 {"type": "task", "data": {"title": "...", "dueDate": "YYYY-MM-DD", "time": "HH:MM", "priority": "Baixa|Média|Alta"}}
+ou
+{"type": "habit", "data": {"name": "...", "frequency": "Diária|Semanal", "days": ["Segunda", "..."], "target": 1}}
 ou
 {"type": "lead", "data": {"name": "...", "business": "...", "contact": "...", "value": 0, "notes": "..."}}
 ou
@@ -92,6 +102,8 @@ ou
 {"type": "query", "data": {}}
 ou
 {"type": "report", "data": {"scope": "finance|tasks|leads", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "title": "..."}}
+ou
+{"type": "chat", "data": {}}
 ou
 {"type": "unclear", "data": {}}
 
@@ -119,8 +131,34 @@ Datas relativas (ex: "sexta", "amanhã") devem virar data absoluta YYYY-MM-DD co
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
 
-  if (!["task", "lead", "finance", "query", "report", "unclear"].includes(parsed.type)) return { type: "unclear", data: {} };
+  if (!["task", "habit", "lead", "finance", "query", "report", "chat", "unclear"].includes(parsed.type)) return { type: "unclear", data: {} };
   return { type: parsed.type, data: parsed.data || {} };
+}
+
+async function answerChat(geminiKey, message, history) {
+  const now = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  const systemPrompt = `Você é o Nex AI, o assistente de inteligência artificial embutido no Nexor (app de organização, rotina, projetos, financeiro e produtividade). Data e hora atual (America/Sao_Paulo): ${now}.
+
+Converse normalmente e ajude com qualquer assunto que a pessoa trouxer — dê conselhos práticos, explique conceitos, ajude a pensar estratégia de negócio, marketing, gestão de tempo, produtividade, redação de textos, o que for preciso. Assuma o papel de especialista no assunto perguntado sempre que fizer sentido. Seja direto e útil, em português, sem enrolação e sem markdown pesado (pode usar quebras de linha e listas simples com "-").
+
+Histórico recente da conversa:
+${historyAsText(history)}`;
+
+  const response = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent",
+    {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": geminiKey },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: message }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      })
+    }
+  );
+
+  if (!response.ok) throw new Error(`Gemini API respondeu ${response.status}: ${await response.text()}`);
+  const result = await response.json();
+  return result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Não consegui responder agora, tenta de novo.";
 }
 
 async function fetchWorkspaceDb(supabaseUrl, anonKey, accessToken) {
@@ -338,6 +376,21 @@ async function appendRecord(supabaseUrl, anonKey, accessToken, parsed) {
     };
     db.tasks.unshift(item);
     summary = `✅ Tarefa criada: ${item.title} — ${formatDate(item.dueDate)} ${item.time}`;
+  } else if (parsed.type === "habit") {
+    db.habits ||= [];
+    const item = {
+      id,
+      name: parsed.data.name || "Hábito via Nex AI",
+      frequency: parsed.data.frequency || "Diária",
+      days: Array.isArray(parsed.data.days) && parsed.data.days.length ? parsed.data.days : ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"],
+      target: Number(parsed.data.target || 1),
+      streak: 0,
+      bestStreak: 0,
+      doneToday: false,
+      history: []
+    };
+    db.habits.unshift(item);
+    summary = `✅ Hábito criado: ${item.name} — ${item.frequency}`;
   } else if (parsed.type === "lead") {
     db.leads ||= [];
     const item = {
