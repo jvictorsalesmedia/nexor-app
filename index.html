@@ -877,6 +877,30 @@
       flex: 1;
     }
 
+    .nex-ai-script-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 360px;
+      overflow-y: auto;
+      margin-top: 6px;
+    }
+
+    .script-entry {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      background: color-mix(in srgb, var(--accent) 4%, transparent);
+    }
+
+    .script-content {
+      margin: 10px 0 0;
+      white-space: pre-wrap;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text);
+    }
+
     .nex-ai-thread {
       display: flex;
       flex-direction: column;
@@ -4116,6 +4140,7 @@
                 <div class="meta"><span>${project.progress || 0}%</span><span>${taskCount} tarefas</span><span>${money(project.budget)}</span></div>
                 <div class="row-actions">
                   <button class="btn" type="button" data-edit="project" data-id="${project.id}" data-icon="edit">Editar</button>
+                  <button class="btn" type="button" data-scripts="${project.id}" data-icon="sparkles">Roteiros${project.roteiros?.length ? ` (${project.roteiros.length})` : ""}</button>
                   ${canManage() ? `<button class="btn danger" type="button" data-delete="project" data-id="${project.id}" data-icon="trash">Excluir</button>` : ""}
                 </div>
               </article>
@@ -4123,6 +4148,99 @@
           }).join("") || emptyBlock("Nenhum projeto cadastrado.")}
         </div>
       `;
+    }
+
+    const productionContentTypes = ["Vídeo", "Reels", "Story", "Post estático", "Legenda", "Roteiro de vendas", "E-mail", "Outro"];
+
+    function openProjectScriptsModal(projectId) {
+      const project = db.projects.find(item => item.id === projectId);
+      if (!project) return;
+      project.roteiros ||= [];
+      const modalRoot = $("#modalRoot");
+      modalRoot.innerHTML = `
+        <dialog>
+          <form class="modal" method="dialog" id="projectScriptForm">
+            <div class="modal-head">
+              <div>
+                <h2>Roteiros — ${escapeHtml(project.name)}</h2>
+                <p class="muted">A IA gera com base nos dados do projeto e do cliente vinculado.</p>
+              </div>
+              <button class="btn icon" type="button" data-close-modal title="Fechar">×</button>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label>Tipo de conteúdo</label><select name="contentType">${options(productionContentTypes, "Vídeo")}</select></div>
+              <div class="field wide"><label>Observações (opcional)</label><textarea name="notes" rows="2" placeholder="Ex: foco em promoção de fim de ano, tom descontraído..."></textarea></div>
+            </div>
+            <div class="modal-actions">
+              <span id="projectScriptStatus" class="muted"></span>
+              <button class="btn accent" type="submit" id="projectScriptSubmit" data-icon="sparkles">Gerar roteiro com IA</button>
+            </div>
+            <div id="projectScriptList" class="nex-ai-script-list">${renderProjectScriptsList(project)}</div>
+          </form>
+        </dialog>
+      `;
+      applyIcons(modalRoot);
+      const dialog = $("dialog", modalRoot);
+      if (dialog.showModal) dialog.showModal();
+      $$("[data-close-modal]", modalRoot).forEach(button => button.addEventListener("click", closeModal));
+      $("#projectScriptForm").addEventListener("submit", event => submitProjectScript(event, projectId));
+      $$("[data-copy-script]", modalRoot).forEach(button => button.addEventListener("click", () => {
+        const roteiro = project.roteiros.find(item => item.id === button.dataset.copyScript);
+        if (!roteiro) return;
+        navigator.clipboard?.writeText(roteiro.content).then(
+          () => toast("Roteiro copiado.", "success"),
+          () => toast("Não foi possível copiar.", "error")
+        );
+      }));
+    }
+
+    function renderProjectScriptsList(project) {
+      if (!project.roteiros.length) {
+        return `<div class="nex-ai-empty muted">Nenhum roteiro gerado ainda.</div>`;
+      }
+      return project.roteiros.map(item => `
+        <div class="script-entry">
+          <div class="section-title">
+            <div><strong>${escapeHtml(item.title)}</strong><div class="meta">${escapeHtml(item.contentType)} • ${dateText(String(item.createdAt).slice(0, 10))}</div></div>
+            <button class="btn icon" type="button" data-copy-script="${item.id}" title="Copiar">${icon("file-text")}</button>
+          </div>
+          <p class="script-content">${escapeHtml(item.content)}</p>
+        </div>
+      `).join("");
+    }
+
+    async function submitProjectScript(event, projectId) {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      const submitBtn = $("#projectScriptSubmit");
+      const statusEl = $("#projectScriptStatus");
+      submitBtn.disabled = true;
+      statusEl.textContent = "Gerando roteiro...";
+      try {
+        const response = await fetch("/api/project-script", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${cloudSession?.access_token || ""}`
+          },
+          body: JSON.stringify({
+            projectId,
+            contentType: formData.get("contentType"),
+            notes: formData.get("notes")
+          })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Não foi possível gerar o roteiro.");
+        await loadCloudDb();
+        statusEl.textContent = "";
+        submitBtn.disabled = false;
+        openProjectScriptsModal(projectId);
+        toast(`Roteiro gerado: ${result.roteiro.title}`, "success");
+      } catch (error) {
+        console.error(error);
+        statusEl.textContent = error.message || "Não foi possível gerar o roteiro.";
+        submitBtn.disabled = false;
+      }
     }
 
     function renderKanban() {
@@ -5149,6 +5267,7 @@
       $("#taskStatusFilter")?.addEventListener("change", renderModule);
       $$("[data-edit]").forEach(button => button.addEventListener("click", () => openModal(button.dataset.edit, button.dataset.id)));
       $$("[data-delete]").forEach(button => button.addEventListener("click", () => deleteEntity(button.dataset.delete, button.dataset.id)));
+      $$("[data-scripts]").forEach(button => button.addEventListener("click", () => openProjectScriptsModal(button.dataset.scripts)));
       $$("[data-complete-task]").forEach(button => button.addEventListener("click", () => completeTask(button.dataset.completeTask)));
       $$("[data-toggle-habit]").forEach(button => button.addEventListener("click", () => toggleHabit(button.dataset.toggleHabit)));
       $$("[data-habit-day]").forEach(button => button.addEventListener("click", () => toggleHabitDay(button.dataset.habitDay)));
@@ -5933,7 +6052,7 @@
           completedAt: data.status === "Concluído" ? (existing?.completedAt || today()) : "",
           attachmentName: file || existing?.attachmentName || ""
         }),
-        project: () => ({ name: data.name, clientId: data.clientId, description: data.description, startDate: data.startDate, dueDate: data.dueDate, status: data.status, owner: data.owner, progress: clamp(data.progress, 0, 100), budget: Number(data.budget || 0), files: data.files, history: existing?.history || [] }),
+        project: () => ({ name: data.name, clientId: data.clientId, description: data.description, startDate: data.startDate, dueDate: data.dueDate, status: data.status, owner: data.owner, progress: clamp(data.progress, 0, 100), budget: Number(data.budget || 0), files: data.files, history: existing?.history || [], roteiros: existing?.roteiros || [] }),
         lead: () => ({ name: data.name, business: data.business, contact: data.contact, email: data.email, whatsapp: data.whatsapp, source: data.source, value: Number(data.value || 0), stage: data.stage || "Novo", owner: data.owner, nextAction: data.nextAction, nextDate: data.nextDate, notes: data.notes, createdAt: existing?.createdAt || today() }),
         client: () => ({ name: data.name, company: data.company, phone: data.phone, whatsapp: data.whatsapp, email: data.email, address: data.address, notes: data.notes }),
         finance: () => ({ title: data.title, type: data.type, category: data.category, value: Number(data.value || 0), date: data.date, clientId: data.clientId, projectId: data.projectId, status: data.status, notes: data.notes, attachmentName: file || existing?.attachmentName || "" }),
