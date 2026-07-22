@@ -1886,6 +1886,19 @@
       margin-bottom: 8px;
     }
 
+    .app-tabs.sidebar-tabs {
+      width: 100%;
+      margin: 0;
+      grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+      gap: 6px;
+    }
+
+    .app-tabs.sidebar-tabs button {
+      min-height: 40px;
+      font-size: 0.72rem;
+      padding: 0 8px;
+    }
+
     .app-tabs button {
       --tab-accent: #f4f4f0;
       min-height: 44px;
@@ -3539,10 +3552,12 @@
           return `
             <div class="nav-group">
               <span class="nav-group-label">${groupLabel}</span>
-              ${items.map(id => {
-                const [moduleId, label, iconName] = byId[id];
-                return `<button type="button" class="${activeModule === moduleId ? "active" : ""}" data-module="${moduleId}">${icon(iconName)}<span>${label}</span></button>`;
-              }).join("")}
+              <div class="app-tabs sidebar-tabs">
+                ${items.map(id => {
+                  const [moduleId, label, iconName] = byId[id];
+                  return `<button type="button" class="${activeModule === moduleId ? "active" : ""}" data-module="${moduleId}">${icon(iconName)}<span>${label}</span></button>`;
+                }).join("")}
+              </div>
             </div>
           `;
         })
