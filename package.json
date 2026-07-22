@@ -1,0 +1,14 @@
+{
+  "name": "nexor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nexor web app: organização, rotina, projetos, financeiro e produtividade.",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy",
+    "deploy:prod": "vercel deploy --prod"
+  },
+  "dependencies": {
+    "@vercel/functions": "latest"
+  }
+}
