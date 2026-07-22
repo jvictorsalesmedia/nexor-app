@@ -460,8 +460,9 @@
     flex: 0 0 auto;
   }
 
-  .ai-list li strong { display: block; margin-bottom: 2px; }
-  .ai-list li span { color: var(--muted); }
+  .ai-list li > div { flex: 1; min-width: 0; }
+  .ai-list li strong { display: block; margin-bottom: 4px; }
+  .ai-list li span { display: block; color: var(--muted); line-height: 1.5; }
 
   .ai-chat-mock {
     background: var(--panel);
@@ -768,10 +769,10 @@
         <h2>Nex AI: você escreve, ela executa.</h2>
         <p class="lead">O Nex AI é o assistente do Nexor: converse em texto livre e ele interpreta, cria e responde. Sem formulário, sem menu: só descreve o que precisa.</p>
         <ul class="ai-list">
-          <li><strong>Cria registros por texto</strong><span>"Reunião com cliente X sexta 15h" vira tarefa. "Recebi 400 do cliente Y" vira lançamento financeiro. Também cria leads e hábitos.</span></li>
-          <li><strong>Responde sobre seus dados</strong><span>"Quanto vou receber essa semana?" ou "qual cliente mais gastou comigo?" Ele calcula em cima do que já está no seu Nexor.</span></li>
-          <li><strong>Gera relatório em PDF na hora</strong><span>"Emitir relatório dos meus gastos do mês passado" e o PDF já é baixado, pronto para financeiro, tarefas ou leads.</span></li>
-          <li><strong>Conversa e aconselha</strong><span>Dúvidas de gestão, marketing, produtividade ou qualquer assunto: o Nex AI assume o papel de especialista e ajuda a pensar.</span></li>
+          <li><div><strong>Cria registros por texto</strong><span>"Reunião com cliente X sexta 15h" vira tarefa. "Recebi 400 do cliente Y" vira lançamento financeiro. Também cria leads e hábitos.</span></div></li>
+          <li><div><strong>Responde sobre seus dados</strong><span>"Quanto vou receber essa semana?" ou "qual cliente mais gastou comigo?" Ele calcula em cima do que já está no seu Nexor.</span></div></li>
+          <li><div><strong>Gera relatório em PDF na hora</strong><span>"Emitir relatório dos meus gastos do mês passado" e o PDF já é baixado, pronto para financeiro, tarefas ou leads.</span></div></li>
+          <li><div><strong>Conversa e aconselha</strong><span>Dúvidas de gestão, marketing, produtividade ou qualquer assunto: o Nex AI assume o papel de especialista e ajuda a pensar.</span></div></li>
         </ul>
         <a href="/app?signup=1" class="btn cyan">Solicitar acesso</a>
       </div>
