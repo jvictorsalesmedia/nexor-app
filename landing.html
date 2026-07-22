@@ -6,6 +6,9 @@
 <title>Nexor — organização, financeiro e produtividade com IA</title>
 <meta name="description" content="Nexor: tarefas, projetos, leads, clientes, financeiro e equipe num só lugar, com o Nex AI cuidando de criação, relatórios e conselhos por texto." />
 <link rel="icon" href="/nexor-mark-transparent.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root {
     --bg: #030303;
@@ -18,6 +21,9 @@
     --cyan: #5eecff;
     --radius: 16px;
     --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: "Bricolage Grotesque", var(--font);
+    --mx: 50%;
+    --my: 30%;
   }
 
   * { box-sizing: border-box; }
@@ -33,9 +39,25 @@
   }
 
   body {
+    position: relative;
     background:
       radial-gradient(circle at 50% -10%, rgba(255,255,255,0.07), transparent 40%),
       linear-gradient(180deg, #000 0%, #050505 50%, #000 100%);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3, .brand span, .kicker, .step-number, .chat-head {
+    font-family: var(--font-display);
   }
 
   a { color: inherit; }
@@ -120,7 +142,28 @@
 
   section { padding: 96px 0; }
 
-  .hero { padding: 96px 0 70px; text-align: center; }
+  .hero {
+    position: relative;
+    padding: 96px 0 70px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero::before,
+  .ai-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(560px circle at var(--mx) var(--my), rgba(255,255,255,0.08), transparent 60%);
+    transition: background 80ms linear;
+  }
+
+  .hero > .wrap {
+    position: relative;
+    z-index: 1;
+  }
 
   .hero .kicker {
     display: inline-flex;
@@ -186,11 +229,76 @@
     background: rgba(255,255,255,0.16);
   }
 
+  .mock-body {
+    display: flex;
+  }
+
+  .mock-sidebar {
+    width: 168px;
+    flex: 0 0 auto;
+    border-right: 1px solid var(--line);
+    padding: 16px 12px;
+  }
+
+  .mock-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    padding: 0 4px;
+  }
+
+  .mock-brand img { width: 18px; height: 18px; object-fit: contain; }
+
+  .mock-nav-group {
+    margin-bottom: 14px;
+  }
+
+  .mock-nav-label {
+    display: block;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0 8px 6px;
+  }
+
+  .mock-nav-item {
+    font-size: 0.76rem;
+    padding: 7px 8px;
+    border-radius: 8px;
+    color: var(--muted);
+  }
+
+  .mock-nav-item.active {
+    color: var(--text);
+    background: rgba(255,255,255,0.06);
+  }
+
+  .mock-main {
+    flex: 1;
+    min-width: 0;
+    padding: 18px 22px 22px;
+  }
+
+  .mock-topbar {
+    margin-bottom: 16px;
+  }
+
+  .mock-search {
+    height: 26px;
+    max-width: 220px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--line);
+  }
+
   .mock-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    padding: 22px;
   }
 
   .mock-card {
@@ -203,6 +311,46 @@
   .mock-card .label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
   .mock-card .value { font-size: 1.2rem; font-weight: 700; margin-top: 6px; }
   .mock-card .delta { font-size: 0.72rem; color: #7ee7a8; margin-top: 4px; }
+
+  .mock-charts {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .mock-chart-card,
+  .mock-donut-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .mock-chart-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .mock-line { width: 100%; height: 60px; }
+
+  .mock-donut {
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    margin: 0 auto;
+    background: conic-gradient(rgba(255,255,255,0.85) 0deg 130deg, rgba(255,255,255,0.5) 130deg 230deg, rgba(255,255,255,0.22) 230deg 360deg);
+    position: relative;
+  }
+
+  .mock-donut::after {
+    content: "";
+    position: absolute;
+    inset: 13px;
+    border-radius: 50%;
+    background: #0d0d0d;
+  }
 
   .section-head { text-align: center; max-width: 620px; margin: 0 auto 46px; }
   .section-head .eyebrow {
@@ -245,9 +393,20 @@
   .feature-card p { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.55; }
 
   .ai-section {
+    position: relative;
+    overflow: hidden;
     background: radial-gradient(circle at 20% 0%, rgba(94,236,255,0.09), transparent 55%), #050505;
     border-top: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
+  }
+
+  .ai-section::before {
+    background: radial-gradient(560px circle at var(--mx) var(--my), rgba(94,236,255,0.14), transparent 60%);
+  }
+
+  .ai-section > .wrap {
+    position: relative;
+    z-index: 1;
   }
 
   .ai-inner {
@@ -474,6 +633,8 @@
     .steps-grid { grid-template-columns: 1fr; }
     .ai-inner { grid-template-columns: 1fr; gap: 34px; }
     .mock-grid { grid-template-columns: 1fr 1fr; }
+    .mock-sidebar { display: none; }
+    .mock-charts { grid-template-columns: 1fr; }
     .module-row { grid-template-columns: 1fr; gap: 6px; }
     .topbar nav { display: none; }
   }
@@ -514,11 +675,45 @@
 
       <div class="mock">
         <div class="mock-bar"><span></span><span></span><span></span></div>
-        <div class="mock-grid">
-          <div class="mock-card"><div class="label">Prioridades</div><div class="value">6</div><div class="delta">2 atrasadas</div></div>
-          <div class="mock-card"><div class="label">Hoje</div><div class="value">3</div><div class="delta">Quarta-feira</div></div>
-          <div class="mock-card"><div class="label">Hábitos</div><div class="value">4/5</div><div class="delta">concluídos hoje</div></div>
-          <div class="mock-card"><div class="label">Saldo previsto</div><div class="value">R$ 4.680</div><div class="delta">receita − despesa</div></div>
+        <div class="mock-body">
+          <aside class="mock-sidebar">
+            <div class="mock-brand"><img src="/nexor-mark-transparent.png" alt="" /><span>Nexor</span></div>
+            <div class="mock-nav-group">
+              <span class="mock-nav-label">Visão geral</span>
+              <div class="mock-nav-item active">Dashboard</div>
+            </div>
+            <div class="mock-nav-group">
+              <span class="mock-nav-label">Trabalho</span>
+              <div class="mock-nav-item">Tarefas</div>
+              <div class="mock-nav-item">Projetos</div>
+              <div class="mock-nav-item">Agenda</div>
+            </div>
+            <div class="mock-nav-group">
+              <span class="mock-nav-label">Financeiro</span>
+              <div class="mock-nav-item">Financeiro</div>
+            </div>
+          </aside>
+          <div class="mock-main">
+            <div class="mock-topbar"><div class="mock-search"></div></div>
+            <div class="mock-grid">
+              <div class="mock-card"><div class="label">Prioridades</div><div class="value">6</div><div class="delta">2 atrasadas</div></div>
+              <div class="mock-card"><div class="label">Hoje</div><div class="value">3</div><div class="delta">Quarta-feira</div></div>
+              <div class="mock-card"><div class="label">Hábitos</div><div class="value">4/5</div><div class="delta">concluídos hoje</div></div>
+              <div class="mock-card"><div class="label">Saldo previsto</div><div class="value">R$ 4.680</div><div class="delta">receita − despesa</div></div>
+            </div>
+            <div class="mock-charts">
+              <div class="mock-chart-card">
+                <div class="mock-chart-label">Pulso da semana</div>
+                <svg viewBox="0 0 200 60" class="mock-line" preserveAspectRatio="none">
+                  <polyline points="0,45 28,38 56,42 84,22 112,28 140,12 168,18 196,8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <div class="mock-donut-card">
+                <div class="mock-chart-label">Leads por origem</div>
+                <div class="mock-donut"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -678,6 +873,14 @@
     }, { threshold: 0.15 });
 
     document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
+
+    document.querySelectorAll(".hero, .ai-section").forEach(section => {
+      section.addEventListener("mousemove", event => {
+        const rect = section.getBoundingClientRect();
+        section.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+        section.style.setProperty("--my", `${event.clientY - rect.top}px`);
+      });
+    });
   </script>
 </body>
 </html>
