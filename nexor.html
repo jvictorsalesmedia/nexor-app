@@ -3154,8 +3154,10 @@
     }
 
     function canAccess(moduleId) {
+      if (!currentUser) return false;
       if (moduleId === "accounts") return isAdmin();
-      return Boolean(currentUser);
+      if (currentUser.role === "colaborador") return collaboratorModules.has(moduleId);
+      return true;
     }
 
     async function boot() {
@@ -3516,6 +3518,7 @@
     }
 
     function renderApp() {
+      activeModule = canAccess(activeModule) ? activeModule : "dashboard";
       renderNav();
       renderUser();
       renderModule();
