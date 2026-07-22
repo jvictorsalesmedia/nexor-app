@@ -3692,20 +3692,6 @@
             ${metric("Saldo previsto", money(balance), `${money(revenue)} receita • ${money(expense)} despesa`, "wallet", balance >= 0 ? "success" : "danger")}
           </div>
           <div class="grid two dashboard-row">
-            <section class="panel dashboard-priority">
-              <div class="section-title">
-                <h2>Prioridades do dia</h2>
-                <span class="chip accent">${dateText(today())}</span>
-              </div>
-              <div class="list">
-                ${focusQueue.map(taskRow).join("") || emptyInline("Nenhuma prioridade para hoje.")}
-              </div>
-              <div class="dashboard-actions">
-                <button class="btn accent" type="button" data-open="task" data-icon="plus">Nova tarefa</button>
-                <button class="btn" type="button" data-module="planner" data-icon="calendar-days">Agenda</button>
-                <button class="btn" type="button" data-module="kanban" data-icon="columns">Kanban</button>
-              </div>
-            </section>
             <section class="panel dashboard-pulse">
               <div class="section-title">
                 <h2>Pulso da semana</h2>
@@ -3720,8 +3706,6 @@
                 }).join("")}
               </div>
             </section>
-          </div>
-          <div class="grid two dashboard-row">
             <section class="panel">
               <div class="section-title">
                 <h2>Leads por origem</h2>
@@ -3729,32 +3713,19 @@
               </div>
               ${donutChart(leadsBySource)}
             </section>
-            <section class="panel">
-              <div class="section-title">
-                <h2>Resumo financeiro</h2>
-                <span class="chip">Pendentes</span>
-              </div>
-              <div class="grid two" style="gap:10px">
-                <div class="list-row"><div><strong>Contas a receber</strong><div class="meta">Receita pendente</div></div><span class="chip success">${money(receivable)}</span></div>
-                <div class="list-row"><div><strong>Contas a pagar</strong><div class="meta">Despesa pendente</div></div><span class="chip danger">${money(payable)}</span></div>
-              </div>
-              ${minimalLineChart(cashFlowForecast(14), "saldo (14d)", Array.from({ length: 14 }, (_, i) => dateText(addDays(i))))}
-            </section>
           </div>
           <div class="grid three dashboard-row">
             <section class="panel dashboard-compact-list">
-              <div class="section-title"><h2>Projetos críticos</h2><button class="btn" type="button" data-open="project" data-icon="plus">Projeto</button></div>
+              <div class="section-title">
+                <h2>Prioridades do dia</h2>
+                <span class="chip accent">${dateText(today())}</span>
+              </div>
               <div class="list">
-                ${activeProjects.slice(0, 4).map(project => `
-                  <div class="list-row">
-                    <div>
-                      <strong>${escapeHtml(project.name)}</strong>
-                      <div class="meta"><span>${escapeHtml(getClientName(project.clientId))}</span><span>${escapeHtml(project.status)}</span><span>${dateText(project.dueDate)}</span></div>
-                      <div class="progress" data-chart-tip="${escapeHtml(project.name)}|${Number(project.progress || 0)}% de progresso" style="--value:${Number(project.progress || 0)}%"><span></span></div>
-                    </div>
-                    <button class="btn icon" type="button" title="Editar" data-edit="project" data-id="${project.id}" data-icon="edit"></button>
-                  </div>
-                `).join("") || emptyInline("Nenhum projeto ativo.")}
+                ${focusQueue.slice(0, 4).map(taskRow).join("") || emptyInline("Nenhuma prioridade para hoje.")}
+              </div>
+              <div class="dashboard-actions">
+                <button class="btn accent" type="button" data-open="task" data-icon="plus">Nova tarefa</button>
+                <button class="btn" type="button" data-module="planner" data-icon="calendar-days">Agenda</button>
               </div>
             </section>
             <section class="panel dashboard-compact-list">
@@ -3775,6 +3746,34 @@
                     </div>
                   `;
                 }).join("") || emptyInline("Nenhum hábito programado.")}
+              </div>
+            </section>
+            <section class="panel dashboard-compact-list">
+              <div class="section-title">
+                <h2>Resumo financeiro</h2>
+                <span class="chip">Pendentes</span>
+              </div>
+              <div class="list">
+                <div class="list-row"><div><strong>Contas a receber</strong><div class="meta">Receita pendente</div></div><span class="chip success">${money(receivable)}</span></div>
+                <div class="list-row"><div><strong>Contas a pagar</strong><div class="meta">Despesa pendente</div></div><span class="chip danger">${money(payable)}</span></div>
+              </div>
+              ${minimalLineChart(cashFlowForecast(14), "saldo (14d)", Array.from({ length: 14 }, (_, i) => dateText(addDays(i))))}
+            </section>
+          </div>
+          <div class="grid two dashboard-row">
+            <section class="panel dashboard-compact-list">
+              <div class="section-title"><h2>Projetos críticos</h2><button class="btn" type="button" data-open="project" data-icon="plus">Projeto</button></div>
+              <div class="list">
+                ${activeProjects.slice(0, 4).map(project => `
+                  <div class="list-row">
+                    <div>
+                      <strong>${escapeHtml(project.name)}</strong>
+                      <div class="meta"><span>${escapeHtml(getClientName(project.clientId))}</span><span>${escapeHtml(project.status)}</span><span>${dateText(project.dueDate)}</span></div>
+                      <div class="progress" data-chart-tip="${escapeHtml(project.name)}|${Number(project.progress || 0)}% de progresso" style="--value:${Number(project.progress || 0)}%"><span></span></div>
+                    </div>
+                    <button class="btn icon" type="button" title="Editar" data-edit="project" data-id="${project.id}" data-icon="edit"></button>
+                  </div>
+                `).join("") || emptyInline("Nenhum projeto ativo.")}
               </div>
             </section>
             <section class="panel dashboard-compact-list">
