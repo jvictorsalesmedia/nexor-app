@@ -3756,8 +3756,8 @@
               <div class="list">
                 <div class="list-row"><div><strong>Contas a receber</strong><div class="meta">Receita pendente</div></div><span class="chip success">${money(receivable)}</span></div>
                 <div class="list-row"><div><strong>Contas a pagar</strong><div class="meta">Despesa pendente</div></div><span class="chip danger">${money(payable)}</span></div>
+                <div class="list-row"><div><strong>Saldo líquido</strong><div class="meta">A receber − a pagar</div></div><span class="chip ${receivable - payable >= 0 ? "success" : "danger"}">${money(receivable - payable)}</span></div>
               </div>
-              ${minimalLineChart(cashFlowForecast(14), "saldo (14d)", Array.from({ length: 14 }, (_, i) => dateText(addDays(i))))}
             </section>
           </div>
           <div class="grid two dashboard-row">
