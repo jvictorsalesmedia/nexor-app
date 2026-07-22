@@ -3088,6 +3088,7 @@
               ${field("E-mail", "email", "", "email", true)}
               ${field("WhatsApp", "whatsapp")}
               ${field("Usuário de acesso desejado", "accessUsername")}
+              ${field("Senha de acesso", "password", "", "password", true)}
               <div class="field wide">
                 <label>Foto do responsável</label>
                 <input name="photo" type="file" accept="image/png,image/jpeg,image/webp" required>
@@ -3127,6 +3128,7 @@
           email: String(formData.get("email") || "").trim().toLowerCase(),
           whatsapp: String(formData.get("whatsapp") || "").trim(),
           accessUsername: String(formData.get("accessUsername") || "").trim().toLowerCase(),
+          password: String(formData.get("password") || ""),
           photoDataUrl: await imageFileToDataUrl(photo)
         };
         const response = await fetch("/api/signup-request", {

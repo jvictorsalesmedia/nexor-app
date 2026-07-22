@@ -47,7 +47,7 @@ module.exports = async function handler(req, res) {
     if (action === "set_status") return res.status(200).json(await setTeamUserStatus(supabaseUrl, serviceKey, body, caller.id));
     if (action === "delete") return res.status(200).json(await deleteTeamUser(supabaseUrl, serviceKey, body, caller.id));
     if (action === "list_signup_requests") return res.status(200).json(await listSignupRequests(supabaseUrl, serviceKey));
-    if (action === "approve_signup_request") return res.status(200).json(await approveSignupRequest(supabaseUrl, serviceKey, body, caller.id, siteOrigin));
+    if (action === "approve_signup_request") return res.status(200).json(await approveSignupRequest(supabaseUrl, serviceKey, body, caller.id));
     if (action === "reject_signup_request") return res.status(200).json(await rejectSignupRequest(supabaseUrl, serviceKey, body, caller.id));
 
     res.status(400).json({ error: "Unknown action." });
@@ -138,7 +138,7 @@ async function listSignupRequests(supabaseUrl, serviceKey) {
   return { requests: rows || [] };
 }
 
-async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId, siteOrigin) {
+async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId) {
   const request = await restSingle(
     supabaseUrl,
     serviceKey,
@@ -146,22 +146,54 @@ async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId, sit
   );
   if (!request) throw new Error("Pre-cadastro nao encontrado.");
   if (request.status !== "pendente") throw new Error("Este pre-cadastro ja foi analisado.");
+  if (!request.auth_user_id) throw new Error("Pre-cadastro sem usuario vinculado.");
 
   const businessName = request.business_name || `Conta ${request.responsible_name || request.email.split("@")[0]}`;
-  const approved = await createClientAccount(supabaseUrl, serviceKey, {
-    businessName,
-    responsibleName: request.responsible_name || request.email.split("@")[0],
+  const responsibleName = request.responsible_name || request.email.split("@")[0];
+  const accessUsername = request.access_username || request.email.split("@")[0];
+  const slug = slugify(body.slug || `${businessName}-${String(request.id).slice(0, 8)}`);
+
+  // O usuario Auth ja existe desde o pre-cadastro (com a senha que a propria
+  // pessoa escolheu) — a aprovacao so ativa o perfil e completa o cadastro do
+  // cliente, nunca cria uma conta nova nem mexe em senha.
+  await authAdmin(supabaseUrl, serviceKey, `/admin/users/${request.auth_user_id}`, {
+    method: "PUT",
+    body: {
+      user_metadata: {
+        full_name: responsibleName,
+        business_name: businessName,
+        access_username: accessUsername,
+        slug
+      }
+    }
+  });
+
+  await upsertProfile(supabaseUrl, serviceKey, {
+    id: request.auth_user_id,
+    email: request.email,
+    full_name: responsibleName,
+    gender: "neutral",
+    app_role: "cliente",
+    status: "ativo"
+  });
+
+  const client = await upsertClient(supabaseUrl, serviceKey, {
+    auth_user_id: request.auth_user_id,
+    business_name: businessName,
+    responsible_name: responsibleName,
     document: request.document || "",
     email: request.email,
     whatsapp: request.whatsapp || "",
-    accessUsername: request.access_username || request.email.split("@")[0],
-    monthlyValue: body.monthlyValue || 0,
-    subscriptionStatus: body.subscriptionStatus || "pendente",
-    paymentDueDate: body.paymentDueDate || "",
-    lastPaymentDate: body.lastPaymentDate || "",
+    access_username: accessUsername,
+    slug,
+    monthly_value: body.monthlyValue || 0,
+    subscription_status: body.subscriptionStatus || "pendente",
+    payment_due_date: body.paymentDueDate || null,
+    last_payment_date: body.lastPaymentDate || null,
     notes: [body.notes, "Criado a partir de pre-cadastro aprovado."].filter(Boolean).join("\n"),
-    slug: body.slug || `${businessName}-${String(request.id).slice(0, 8)}`
-  }, callerId, siteOrigin);
+    login_blocked: false,
+    created_by: callerId
+  });
 
   const updated = await restPatch(
     supabaseUrl,
@@ -172,16 +204,29 @@ async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId, sit
       decision_note: String(body.notes || ""),
       reviewed_by: callerId,
       reviewed_at: new Date().toISOString(),
-      created_client_id: approved.client.id
+      created_client_id: client.id
     }
   );
 
-  return { request: updated, client: approved.client };
+  try {
+    await sendApprovalEmail(request.email);
+  } catch (error) {
+    console.error("Falha ao enviar email de aprovacao:", error.message);
+  }
+
+  return { request: updated, client };
 }
 
 async function rejectSignupRequest(supabaseUrl, serviceKey, body, callerId) {
   const requestId = String(body.requestId || "");
   if (!requestId) throw new Error("Pre-cadastro nao informado.");
+
+  const existing = await restSingle(
+    supabaseUrl,
+    serviceKey,
+    `/nexor_signup_requests?id=eq.${encodeURIComponent(requestId)}&select=auth_user_id`
+  );
+
   const request = await restPatch(
     supabaseUrl,
     serviceKey,
@@ -193,7 +238,37 @@ async function rejectSignupRequest(supabaseUrl, serviceKey, body, callerId) {
       reviewed_at: new Date().toISOString()
     }
   );
+
+  // Um pedido reprovado nao deve deixar uma conta Auth pra tras — a pessoa
+  // nunca teve acesso liberado, entao remover o usuario e seguro.
+  if (existing?.auth_user_id) {
+    try {
+      await authAdmin(supabaseUrl, serviceKey, `/admin/users/${existing.auth_user_id}`, { method: "DELETE" });
+    } catch (error) {
+      console.error("Falha ao remover usuario reprovado:", error.message);
+    }
+  }
+
   return { request };
+}
+
+async function sendApprovalEmail(email) {
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) throw new Error("GMAIL_USER/GMAIL_APP_PASSWORD nao configurados.");
+
+  const nodemailer = require("nodemailer");
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass }
+  });
+
+  await transporter.sendMail({
+    from: `Nexor <${user}>`,
+    to: email,
+    subject: "Acesso liberado — Nexor",
+    text: "Você já pode acessar o nexor com o usuário e senha que criou. Para mais dúvidas, 5522998229144"
+  });
 }
 
 function normalizeTeamUserPayload(body) {

@@ -9,6 +9,7 @@
     "deploy:prod": "vercel deploy --prod"
   },
   "dependencies": {
-    "@vercel/functions": "latest"
+    "@vercel/functions": "latest",
+    "nodemailer": "^6.9.14"
   }
 }
