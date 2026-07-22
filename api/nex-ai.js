@@ -58,14 +58,14 @@ Responda SOMENTE com um JSON válido, sem texto adicional, no formato:
 ou
 {"type": "lead", "data": {"name": "...", "business": "...", "contact": "...", "value": 0, "notes": "..."}}
 ou
-{"type": "finance", "data": {"title": "...", "type": "entrada|saida", "value": 0, "date": "YYYY-MM-DD"}}
+{"type": "finance", "data": {"title": "...", "type": "Receita|Despesa", "value": 0, "date": "YYYY-MM-DD", "status": "Pago|Pendente"}}
 ou
 {"type": "unclear", "data": {}}
 
 Datas relativas (ex: "sexta", "amanhã") devem virar data absoluta YYYY-MM-DD com base na data atual informada. Se um campo não puder ser inferido, use uma string vazia ou 0 — nunca invente valor plausível para nome/telefone/pessoa.`;
 
   const response = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent",
     {
       method: "POST",
       headers: { "content-type": "application/json", "x-goog-api-key": geminiKey },
@@ -156,18 +156,18 @@ async function appendRecord(supabaseUrl, anonKey, accessToken, parsed) {
     const item = {
       id,
       title: parsed.data.title || "Lançamento via Nex AI",
-      type: parsed.data.type === "saida" ? "saida" : "entrada",
+      type: parsed.data.type === "Despesa" ? "Despesa" : "Receita",
       category: "",
       value: Number(parsed.data.value || 0),
       date: parsed.data.date || today,
       clientId: "",
       projectId: "",
-      status: "Pago",
+      status: parsed.data.status === "Pendente" ? "Pendente" : "Pago",
       notes: "",
       attachmentName: ""
     };
     db.finance.unshift(item);
-    summary = `✅ Financeiro registrado: ${item.title} — R$ ${item.value.toFixed(2)} (${item.type === "saida" ? "saída" : "entrada"})`;
+    summary = `✅ Financeiro registrado: ${item.title} — R$ ${item.value.toFixed(2)} (${item.type})`;
   }
 
   await restFetch(supabaseUrl, anonKey, accessToken, `/nexor_records?id=eq.${record.id}`, {
