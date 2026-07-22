@@ -414,16 +414,50 @@
 
     .nav-group {
       display: grid;
-      gap: 5px;
+      gap: 0;
     }
 
-    .nav-group-label {
+    .nav-group-toggle {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 11px;
       font-size: 0.68rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
-      padding: 0 11px;
-      margin-bottom: 2px;
+      cursor: pointer;
+    }
+
+    .nav-group-toggle svg {
+      width: 13px;
+      height: 13px;
+      stroke-width: 2.2;
+      transition: transform 180ms ease;
+    }
+
+    .nav-group.open .nav-group-toggle svg {
+      transform: rotate(180deg);
+    }
+
+    .nav-group-toggle:hover {
+      color: var(--text);
+    }
+
+    .nav-group-items {
+      display: none;
+      flex-direction: column;
+      gap: 1px;
+      padding-bottom: 6px;
+    }
+
+    .nav-group.open .nav-group-items {
+      display: flex;
+      animation: softReveal 180ms ease both;
     }
 
     .nav button {
@@ -434,7 +468,7 @@
       display: flex;
       align-items: center;
       gap: 11px;
-      padding: 10px 11px;
+      padding: 8px 11px;
       border-radius: var(--radius);
       text-align: left;
       transition: background 150ms ease, color 150ms ease;
@@ -443,8 +477,7 @@
     .nav button:hover,
     .nav button.active {
       color: var(--text);
-      background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 9%, transparent), color-mix(in srgb, var(--accent) 3%, transparent));
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
     }
 
     .nav svg,
@@ -1645,6 +1678,10 @@
     }
 
     @media (max-width: 860px) {
+    .module-head .app-tabs {
+      display: grid;
+    }
+
     body {
       --logo-max-height: 160px;
       --logo-opacity: 1;
@@ -2014,17 +2051,8 @@
       margin-bottom: 8px;
     }
 
-    .app-tabs.sidebar-tabs {
-      width: 100%;
-      margin: 0;
-      grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
-      gap: 6px;
-    }
-
-    .app-tabs.sidebar-tabs button {
-      min-height: 40px;
-      font-size: 0.72rem;
-      padding: 0 8px;
+    .module-head .app-tabs {
+      display: none;
     }
 
     .app-tabs button {
@@ -2511,7 +2539,9 @@
       "eye": '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle>',
       "download": '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path>',
       "file-text": '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M16 13H8"></path><path d="M16 17H8"></path><path d="M10 9H8"></path>',
-      "target": '<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.6"></circle><path d="M12 3v3"></path><path d="M21 12h-3"></path><path d="M12 21v-3"></path><path d="M3 12h3"></path>'
+      "target": '<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.6"></circle><path d="M12 3v3"></path><path d="M21 12h-3"></path><path d="M12 21v-3"></path><path d="M3 12h3"></path>',
+      "chevron-down": '<path d="m6 9 6 6 6-6"></path>',
+      "sparkles": '<path d="M12 3v4"></path><path d="M12 17v4"></path><path d="M3 12h4"></path><path d="M17 12h4"></path><path d="m5.6 5.6 2.8 2.8"></path><path d="m15.6 15.6 2.8 2.8"></path><path d="m18.4 5.6-2.8 2.8"></path><path d="m8.4 15.6-2.8 2.8"></path>'
     };
 
     let users = [];
@@ -2520,6 +2550,7 @@
     let currentUser = null;
     let db = null;
     let activeModule = "dashboard";
+    let expandedNavGroup = null;
     let accessNotice = "";
     let clientRoute = { active: false, slug: "" };
     let cloudConfig = { url: "", anonKey: "" };
@@ -3593,16 +3624,26 @@
       applyIcons($("#themeBtn"));
     }
 
+    function activeNavGroupLabel() {
+      const group = moduleGroups.find(([, ids]) => ids.includes(activeModule));
+      return group ? group[0] : "";
+    }
+
     function renderNav() {
       const byId = Object.fromEntries(modules.map(item => [item[0], item]));
+      if (expandedNavGroup === null) expandedNavGroup = activeNavGroupLabel();
       $("#nav").innerHTML = moduleGroups
         .map(([groupLabel, ids]) => {
           const items = ids.filter(id => canAccess(id));
           if (!items.length) return "";
+          const isOpen = expandedNavGroup === groupLabel;
           return `
-            <div class="nav-group">
-              <span class="nav-group-label">${groupLabel}</span>
-              <div class="app-tabs sidebar-tabs">
+            <div class="nav-group ${isOpen ? "open" : ""}">
+              <button type="button" class="nav-group-toggle" data-group="${escapeHtml(groupLabel)}">
+                <span>${groupLabel}</span>
+                ${icon("chevron-down")}
+              </button>
+              <div class="nav-group-items">
                 ${items.map(id => {
                   const [moduleId, label, iconName] = byId[id];
                   return `<button type="button" class="${activeModule === moduleId ? "active" : ""}" data-module="${moduleId}">${icon(iconName)}<span>${label}</span></button>`;
@@ -3612,7 +3653,12 @@
           `;
         })
         .join("");
-      $$("#nav button").forEach(button => button.addEventListener("click", () => {
+      $$(".nav-group-toggle").forEach(button => button.addEventListener("click", () => {
+        const group = button.dataset.group;
+        expandedNavGroup = expandedNavGroup === group ? "" : group;
+        renderNav();
+      }));
+      $$(".nav-group-items button").forEach(button => button.addEventListener("click", () => {
         activeModule = button.dataset.module;
         $("#globalSearch").value = "";
         $("#searchResults").classList.add("hidden");
