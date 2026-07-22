@@ -223,6 +223,13 @@
     border: 1px solid var(--line);
     border-radius: var(--radius);
     padding: 22px;
+    transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.22);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
   }
 
   .feature-card .icon-dot {
@@ -372,6 +379,65 @@
     color: var(--text);
   }
 
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    counter-reset: step;
+  }
+
+  .step-card {
+    position: relative;
+    padding: 26px 22px 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--panel);
+  }
+
+  .step-card .step-number {
+    counter-increment: step;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  .step-card .step-number::before {
+    content: "0" counter(step);
+    margin-right: 8px;
+    color: var(--text);
+  }
+
+  .step-card h3 { margin: 0 0 6px; font-size: 1rem; }
+  .step-card p { margin: 0; color: var(--muted); font-size: 0.86rem; line-height: 1.55; }
+
+  .step-card:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -22px;
+    width: 22px;
+    height: 1px;
+    background: var(--line);
+    display: none;
+  }
+
+  @media (min-width: 861px) {
+    .step-card:not(:last-child)::after { display: block; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 640ms ease, transform 640ms ease;
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   .cta-section {
     text-align: center;
   }
@@ -405,6 +471,7 @@
 
   @media (max-width: 860px) {
     .features-grid { grid-template-columns: 1fr 1fr; }
+    .steps-grid { grid-template-columns: 1fr; }
     .ai-inner { grid-template-columns: 1fr; gap: 34px; }
     .mock-grid { grid-template-columns: 1fr 1fr; }
     .module-row { grid-template-columns: 1fr; gap: 6px; }
@@ -459,38 +526,38 @@
 
   <section id="recursos">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <div class="eyebrow">O que tem dentro</div>
         <h2>Um sistema, todas as frentes do negócio</h2>
         <p>Cada módulo já nasce conectado aos outros — uma tarefa vira lançamento financeiro, um lead vira cliente, um hábito vira rotina acompanhada.</p>
       </div>
       <div class="features-grid">
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="icon-dot">✓</div>
           <h3>Tarefas, Kanban e Agenda</h3>
           <p>Prioridades do dia, quadro Kanban, planner semanal, Matriz de Eisenhower e integração de um clique com o Google Agenda.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="icon-dot">◎</div>
           <h3>Leads e Clientes</h3>
           <p>Funil comercial por estágio, cadastro de clientes, histórico de contato e vínculo direto com projetos e financeiro.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="icon-dot">$</div>
           <h3>Financeiro</h3>
           <p>Receitas, despesas, contas a pagar e receber, despesas por categoria e previsão de saldo dos próximos 30 dias.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="icon-dot">↻</div>
           <h3>Hábitos e rotina</h3>
           <p>Acompanhamento diário de hábitos, sequência (streak) e progresso — pessoal ou da equipe.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="icon-dot">▤</div>
           <h3>Produção e Projetos</h3>
           <p>Demandas criativas com captação, edição, aprovação e entrega, além de projetos com orçamento e progresso.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="icon-dot">⚭</div>
           <h3>Equipe e Relatórios</h3>
           <p>Cadastro de funcionários, controle de acesso por perfil e relatórios de produtividade, atrasos e lucro.</p>
@@ -501,7 +568,7 @@
 
   <section id="nex-ai" class="ai-section">
     <div class="wrap ai-inner">
-      <div>
+      <div class="reveal">
         <img src="/nex-ai-badge.svg" alt="Nex AI" class="ai-badge" />
         <h2>Nex AI: você escreve, ela executa.</h2>
         <p class="lead">O Nex AI é o assistente do Nexor — converse em texto livre e ele interpreta, cria e responde. Sem formulário, sem menu: só descreve o que precisa.</p>
@@ -513,7 +580,7 @@
         </ul>
         <a href="/app?signup=1" class="btn cyan">Solicitar acesso</a>
       </div>
-      <div class="ai-chat-mock">
+      <div class="ai-chat-mock reveal">
         <div class="chat-head"><img src="/nex-ai-badge.svg" alt="" /> Nex AI</div>
         <div class="bubble user">emitir relatório dos meus gastos do mês passado</div>
         <div class="bubble ai">📄 Relatório financeiro gerado: 01/06 a 30/06 — receita R$ 12.400,00, despesa R$ 5.180,00, saldo R$ 7.220,00.</div>
@@ -525,11 +592,38 @@
 
   <section>
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
+        <div class="eyebrow">Como funciona</div>
+        <h2>Do pedido de acesso ao primeiro login</h2>
+        <p>Sem burocracia, sem cadastro de cartão — três passos e você já está organizando tudo.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card reveal">
+          <div class="step-number">Solicite acesso</div>
+          <h3>Preencha seus dados</h3>
+          <p>Nome do negócio, responsável e uma foto — leva menos de um minuto.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-number">Aprovação</div>
+          <h3>Receba login e senha por e-mail</h3>
+          <p>O administrador aprova e uma senha provisória chega no seu e-mail na hora — sem espera.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-number">Comece a usar</div>
+          <h3>Organize com o Nexor e o Nex AI</h3>
+          <p>Entre, troque sua senha se quiser, e já pode pedir pro Nex AI criar sua primeira tarefa.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
         <div class="eyebrow">Como é organizado</div>
         <h2>Tudo agrupado do jeito que você trabalha</h2>
       </div>
-      <div class="modules-list">
+      <div class="modules-list reveal">
         <div class="module-row">
           <div class="group-tag">Visão geral</div>
           <div class="items"><span>Dashboard</span></div>
@@ -556,7 +650,7 @@
 
   <section class="cta-section">
     <div class="wrap">
-      <div class="cta-box">
+      <div class="cta-box reveal">
         <h2>Pronto pra organizar tudo num lugar só?</h2>
         <p>Preencha a solicitação de acesso — o administrador aprova e você recebe login e senha por e-mail na hora.</p>
         <a href="/app?signup=1" class="btn primary">Solicitar acesso</a>
@@ -573,6 +667,17 @@
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
   </script>
 </body>
 </html>
