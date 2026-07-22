@@ -306,6 +306,17 @@
     border: 1px solid var(--line);
     border-radius: 12px;
     padding: 14px;
+    animation: mockPop 520ms ease backwards;
+  }
+
+  .mock-grid .mock-card:nth-child(1) { animation-delay: 60ms; }
+  .mock-grid .mock-card:nth-child(2) { animation-delay: 150ms; }
+  .mock-grid .mock-card:nth-child(3) { animation-delay: 240ms; }
+  .mock-grid .mock-card:nth-child(4) { animation-delay: 330ms; }
+
+  @keyframes mockPop {
+    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
   .mock-card .label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -335,6 +346,16 @@
 
   .mock-line { width: 100%; height: 60px; }
 
+  .mock-line polyline {
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+    animation: drawLine 1.4s ease-out 0.5s forwards;
+  }
+
+  @keyframes drawLine {
+    to { stroke-dashoffset: 0; }
+  }
+
   .mock-donut {
     width: 74px;
     height: 74px;
@@ -342,6 +363,7 @@
     margin: 0 auto;
     background: conic-gradient(rgba(255,255,255,0.85) 0deg 130deg, rgba(255,255,255,0.5) 130deg 230deg, rgba(255,255,255,0.22) 230deg 360deg);
     position: relative;
+    animation: mockPop 600ms ease 0.4s backwards;
   }
 
   .mock-donut::after {
@@ -387,6 +409,13 @@
     border: 1px solid var(--line);
     margin-bottom: 14px;
     font-size: 1.1rem;
+    transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  }
+
+  .feature-card:hover .icon-dot {
+    transform: scale(1.1);
+    border-color: rgba(94,236,255,0.4);
+    box-shadow: 0 0 16px rgba(94,236,255,0.28);
   }
 
   .feature-card h3 { margin: 0 0 6px; font-size: 1rem; }
@@ -488,6 +517,14 @@
     font-size: 0.84rem;
     line-height: 1.45;
     margin-bottom: 10px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 320ms ease, transform 320ms ease;
+  }
+
+  .bubble.show {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   .bubble.user {
@@ -499,6 +536,31 @@
   .bubble.ai {
     background: color-mix(in srgb, var(--cyan) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--cyan) 26%, var(--line));
+  }
+
+  .bubble.typing {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    width: fit-content;
+    padding: 12px 14px;
+  }
+
+  .bubble.typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    opacity: 0.5;
+    animation: typingDot 1s infinite ease-in-out;
+  }
+
+  .bubble.typing span:nth-child(2) { animation-delay: 0.15s; }
+  .bubble.typing span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes typingDot {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
   }
 
   .modules-list {
@@ -552,6 +614,13 @@
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: var(--panel);
+    transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  }
+
+  .step-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.22);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
   }
 
   .step-card .step-number {
@@ -906,6 +975,54 @@
         section.style.setProperty("--my", `${event.clientY - rect.top}px`);
       });
     });
+
+    function animateChatMock(mock) {
+      const bubbles = Array.from(mock.querySelectorAll(".bubble"));
+      if (!bubbles.length) return;
+      let index = 0;
+      let timer = null;
+
+      function step() {
+        if (index >= bubbles.length) {
+          timer = setTimeout(() => {
+            bubbles.forEach(bubble => bubble.classList.remove("show"));
+            index = 0;
+            timer = setTimeout(step, 600);
+          }, 3200);
+          return;
+        }
+        const bubble = bubbles[index];
+        if (bubble.classList.contains("ai")) {
+          const typing = document.createElement("div");
+          typing.className = "bubble ai typing show";
+          typing.innerHTML = "<span></span><span></span><span></span>";
+          bubble.before(typing);
+          timer = setTimeout(() => {
+            typing.remove();
+            bubble.classList.add("show");
+            index++;
+            timer = setTimeout(step, 900);
+          }, 850);
+        } else {
+          bubble.classList.add("show");
+          index++;
+          timer = setTimeout(step, 650);
+        }
+      }
+
+      step();
+    }
+
+    const chatObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateChatMock(entry.target);
+          chatObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll(".ai-chat-mock").forEach(mock => chatObserver.observe(mock));
   </script>
 </body>
 </html>
