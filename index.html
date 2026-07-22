@@ -4920,6 +4920,14 @@
                 <input name="googleClientId" value="${escapeHtml(db.calendar?.googleClientId || "")}" placeholder="Cole o Client ID do Google Cloud">
                 <button class="btn" type="submit" data-icon="check">Salvar calendário</button>
               </form>
+              ${cloudEnabled() ? `
+              <form id="whatsappSettingsForm" class="field">
+                <label>Nex AI no WhatsApp</label>
+                <input name="whatsappPhone" value="${escapeHtml(db.whatsappPhone || "")}" placeholder="Seu WhatsApp com DDD, ex: 22999998888">
+                <div class="meta">Vincule seu número pra criar tarefas, leads, financeiro e conversar com a Nex AI direto pelo WhatsApp.</div>
+                <button class="btn" type="submit" data-icon="check">Salvar WhatsApp</button>
+              </form>
+              ` : ""}
               <div class="list-row"><strong>Backup</strong><button class="btn" type="button" data-export="backup" data-icon="download">Exportar</button></div>
             </div>
           </div>
@@ -5305,6 +5313,7 @@
       }));
       $("#profileSettingsForm")?.addEventListener("submit", saveProfileSettings);
       $("#calendarSettingsForm")?.addEventListener("submit", saveCalendarSettings);
+      $("#whatsappSettingsForm")?.addEventListener("submit", saveWhatsappSettings);
       $$("[data-open-client-account]").forEach(button => button.addEventListener("click", () => openClientAccountModal()));
       $$("[data-edit-client-account]").forEach(button => button.addEventListener("click", () => openClientAccountModal(button.dataset.editClientAccount)));
       $$("[data-delete-client-account]").forEach(button => button.addEventListener("click", () => deleteClientAccount(button.dataset.deleteClientAccount)));
@@ -6334,6 +6343,16 @@
       logActivity(db.calendar.connected ? "Google Calendar configurado" : "Google Calendar desconectado");
       saveDb();
       renderApp();
+    }
+
+    function saveWhatsappSettings(event) {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      db.whatsappPhone = String(formData.get("whatsappPhone") || "").replace(/\D/g, "");
+      logActivity(db.whatsappPhone ? "WhatsApp vinculado à Nex AI" : "WhatsApp desvinculado da Nex AI");
+      saveDb();
+      renderApp();
+      accessNotice = db.whatsappPhone ? "WhatsApp vinculado! Já pode conversar com a Nex AI por lá." : "";
     }
 
     function openClientAccountModal(id = "") {

@@ -7,9 +7,14 @@ const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") ?? "";
 const SUPABASE_URL = (Deno.env.get("SUPABASE_URL") ?? "").replace(/\/$/, "");
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-const ADMIN_EMAIL = "jvgsales72@gmail.com";
+const ownerIdByPhone = new Map<string, string>();
 
-let cachedOwnerId = "";
+type ChatTurn = { role: string; content: string };
+
+type ParsedMessage = {
+  type: "task" | "habit" | "lead" | "finance" | "query" | "report" | "chat" | "unclear";
+  data: Record<string, any>;
+};
 
 Deno.serve(async (req: Request) => {
   const url = new URL(req.url);
@@ -40,35 +45,51 @@ Deno.serve(async (req: Request) => {
       return Response.json({ ok: true, skipped: true });
     }
 
-    const ownerId = await resolveOwnerId();
+    const ownerId = await resolveOwnerIdByPhone(message.from);
     if (!ownerId) {
-      console.error("whatsapp_webhook: nao foi possivel resolver o owner (admin).");
+      await sendWhatsappReply(
+        message.from,
+        "Esse número ainda não está vinculado a nenhuma conta Nexor. Entra no app, vai em Configurações e vincula seu WhatsApp na seção \"Nex AI no WhatsApp\"."
+      );
       return Response.json({ ok: true, skipped: true });
     }
 
+    const history = await fetchHistory(ownerId, message.from);
     const inboxId = await insertInbox(ownerId, message.from, message.text);
 
     let parsed: ParsedMessage | null = null;
     try {
-      parsed = await classifyMessage(message.text);
+      parsed = await classifyMessage(message.text, history);
     } catch (error) {
       console.error("whatsapp_webhook: falha na classificacao IA:", (error as Error).message);
     }
 
     if (!parsed || parsed.type === "unclear") {
-      await updateInbox(inboxId, { status: "erro", parsed_type: parsed?.type || "unclear", parsed_data: parsed?.data || {} });
-      await sendWhatsappReply(message.from, "Não entendi essa mensagem 🤔 Pode reformular? Ex: \"reunião com cliente X sexta 15h\" ou \"recebi 400 do cliente Y\".");
+      const reply = "Não entendi essa mensagem 🤔 Posso criar tarefas, hábitos, leads, lançamentos financeiros, responder perguntas sobre seus dados ou só bater um papo. Pode reformular?";
+      await updateInbox(inboxId, { status: "erro", parsed_type: parsed?.type || "unclear", parsed_data: parsed?.data || {}, reply });
+      await sendWhatsappReply(message.from, reply);
       return Response.json({ ok: true });
     }
 
     try {
-      const summary = await appendRecord(ownerId, parsed);
-      await updateInbox(inboxId, { status: "processado", parsed_type: parsed.type, parsed_data: parsed.data });
-      await sendWhatsappReply(message.from, summary);
+      let reply = "";
+      if (parsed.type === "chat") {
+        reply = await answerChat(message.text, history);
+      } else if (parsed.type === "query") {
+        reply = await answerQuery(ownerId, message.text, history);
+      } else if (parsed.type === "report") {
+        const answer = await answerQuery(ownerId, message.text, history);
+        reply = `${answer}\n\n(Relatório em PDF completo: acesse o Nex AI pelo site do Nexor.)`;
+      } else {
+        reply = await appendRecord(ownerId, parsed);
+      }
+      await updateInbox(inboxId, { status: "processado", parsed_type: parsed.type, parsed_data: parsed.data, reply });
+      await sendWhatsappReply(message.from, reply);
     } catch (error) {
-      console.error("whatsapp_webhook: falha ao gravar registro:", (error as Error).message);
-      await updateInbox(inboxId, { status: "erro", parsed_type: parsed.type, parsed_data: parsed.data });
-      await sendWhatsappReply(message.from, "Entendi a mensagem mas tive um problema pra salvar no Nexor. Tenta de novo em instantes.");
+      console.error("whatsapp_webhook: falha ao processar:", (error as Error).message);
+      const reply = "Entendi a mensagem mas tive um problema pra processar. Tenta de novo em instantes.";
+      await updateInbox(inboxId, { status: "erro", parsed_type: parsed.type, parsed_data: parsed.data, reply });
+      await sendWhatsappReply(message.from, reply);
     }
 
     return Response.json({ ok: true });
@@ -89,14 +110,34 @@ function extractMessage(payload: any): { from: string; text: string } | null {
   return { from: entry.from, text };
 }
 
-// ---------- Owner (admin) ----------
+// ---------- Owner (por numero de WhatsApp vinculado) ----------
 
-async function resolveOwnerId(): Promise<string> {
-  if (cachedOwnerId) return cachedOwnerId;
-  const data = await authAdmin(`/admin/users?email=${encodeURIComponent(ADMIN_EMAIL)}`);
-  const user = data?.users?.[0];
-  if (user?.id) cachedOwnerId = user.id;
-  return cachedOwnerId;
+function normalizePhone(raw: string): string {
+  return String(raw || "").replace(/\D/g, "");
+}
+
+function phoneMatches(a: string, b: string): boolean {
+  const x = normalizePhone(a);
+  const y = normalizePhone(b);
+  if (!x || !y) return false;
+  return x.endsWith(y) || y.endsWith(x);
+}
+
+async function resolveOwnerIdByPhone(fromPhone: string): Promise<string> {
+  const cached = ownerIdByPhone.get(fromPhone);
+  if (cached) return cached;
+
+  const rows = await restFetch(
+    `/nexor_records?record_type=eq.setting&data->>key=eq.workspace&select=owner_id,data`
+  );
+  for (const row of rows) {
+    const savedPhone = row?.data?.db?.whatsappPhone;
+    if (savedPhone && phoneMatches(fromPhone, savedPhone)) {
+      ownerIdByPhone.set(fromPhone, row.owner_id);
+      return row.owner_id;
+    }
+  }
+  return "";
 }
 
 // ---------- Inbox (nexor_whatsapp_inbox) ----------
@@ -115,27 +156,65 @@ async function updateInbox(id: string, patch: Record<string, unknown>) {
   await restFetch(`/nexor_whatsapp_inbox?id=eq.${id}`, { method: "PATCH", body: patch });
 }
 
-// ---------- Classificacao via Claude ----------
+async function fetchHistory(ownerId: string, phone: string): Promise<ChatTurn[]> {
+  try {
+    const rows = await restFetch(
+      `/nexor_whatsapp_inbox?owner_id=eq.${ownerId}&phone=eq.${phone}&order=created_at.desc&limit=6&select=message,reply`
+    );
+    const items = rows.reverse();
+    const history: ChatTurn[] = [];
+    for (const item of items) {
+      if (item.message) history.push({ role: "user", content: item.message });
+      if (item.reply) history.push({ role: "assistant", content: item.reply });
+    }
+    return history.slice(-12);
+  } catch {
+    return [];
+  }
+}
 
-type ParsedMessage = {
-  type: "task" | "lead" | "finance" | "unclear";
-  data: Record<string, any>;
-};
+function historyAsText(history: ChatTurn[]): string {
+  if (!history.length) return "(sem mensagens anteriores)";
+  return history
+    .map(item => `${item.role === "assistant" ? "Nex AI" : "Usuário"}: ${String(item.content || "").slice(0, 400)}`)
+    .join("\n");
+}
 
-async function classifyMessage(text: string): Promise<ParsedMessage> {
+// ---------- Classificacao via Gemini ----------
+
+async function classifyMessage(text: string, history: ChatTurn[]): Promise<ParsedMessage> {
   const now = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 
-  const systemPrompt = `Você interpreta mensagens curtas de WhatsApp para o Nexor, um app de organização/produtividade.
+  const systemPrompt = `Você interpreta mensagens de WhatsApp para o Nexor, um app de organização/produtividade.
 Data e hora atual (America/Sao_Paulo): ${now}.
 
-Classifique a mensagem em um destes tipos: "task" (inclui compromissos/eventos de agenda), "lead" (oportunidade comercial nova), "finance" (lançamento financeiro, entrada ou saída de dinheiro), ou "unclear" (não deu pra entender uma ação clara).
+Histórico recente da conversa (pode ajudar a entender o contexto de uma mensagem curta ou de acompanhamento):
+${historyAsText(history)}
+
+Classifique a ÚLTIMA mensagem do usuário em um destes tipos:
+- "task": inclui compromissos/eventos de agenda.
+- "habit": pedido pra criar um hábito/rotina recorrente (ex: "quero criar o hábito de beber água").
+- "lead": oportunidade comercial nova.
+- "finance": lançamento financeiro, entrada ou saída de dinheiro.
+- "query": pergunta sobre dados que já existem no sistema do usuário (ex: "quanto vou receber essa semana").
+- "report": pedido explícito de relatório/documento/PDF.
+- "chat": qualquer outra coisa — conversa, pedido de conselho, dúvida sobre qualquer assunto, brainstorm, ajuda pra escrever algo, etc. Modo padrão quando não é claramente uma das ações acima.
+- "unclear": mensagem vazia ou impossível de entender (raro — prefira "chat" quando houver qualquer conteúdo interpretável).
 
 Responda SOMENTE com um JSON válido, sem texto adicional, no formato:
 {"type": "task", "data": {"title": "...", "dueDate": "YYYY-MM-DD", "time": "HH:MM", "priority": "Baixa|Média|Alta"}}
 ou
+{"type": "habit", "data": {"name": "...", "frequency": "Diária|Semanal", "days": ["Segunda", "..."], "target": 1}}
+ou
 {"type": "lead", "data": {"name": "...", "business": "...", "contact": "...", "value": 0, "notes": "..."}}
 ou
 {"type": "finance", "data": {"title": "...", "type": "Receita|Despesa", "value": 0, "date": "YYYY-MM-DD", "status": "Pago|Pendente"}}
+ou
+{"type": "query", "data": {}}
+ou
+{"type": "report", "data": {}}
+ou
+{"type": "chat", "data": {}}
 ou
 {"type": "unclear", "data": {}}
 
@@ -166,20 +245,110 @@ Datas relativas (ex: "sexta", "amanhã") devem virar data absoluta YYYY-MM-DD co
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
 
-  if (!["task", "lead", "finance", "unclear"].includes(parsed.type)) {
+  if (!["task", "habit", "lead", "finance", "query", "report", "chat", "unclear"].includes(parsed.type)) {
     return { type: "unclear", data: {} };
   }
   return { type: parsed.type, data: parsed.data || {} };
 }
 
-// ---------- Gravar no workspace (nexor_records / record_type=setting) ----------
+// ---------- Conversa livre ----------
 
-async function appendRecord(ownerId: string, parsed: ParsedMessage): Promise<string> {
+async function answerChat(message: string, history: ChatTurn[]): Promise<string> {
+  const now = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  const systemPrompt = `Você é o Nex AI, o assistente de inteligência artificial embutido no Nexor (app de organização, rotina, projetos, financeiro e produtividade), respondendo agora pelo WhatsApp. Data e hora atual (America/Sao_Paulo): ${now}.
+
+Converse normalmente e ajude com qualquer assunto que a pessoa trouxer — dê conselhos práticos, explique conceitos, ajude a pensar estratégia de negócio, marketing, gestão de tempo, produtividade, redação de textos, o que for preciso. Assuma o papel de especialista no assunto perguntado sempre que fizer sentido. Seja direto e útil, em português, sem markdown (é WhatsApp — nada de *, #, listas com marcação; só texto corrido e quebras de linha). Respostas curtas e objetivas.
+
+Histórico recente da conversa:
+${historyAsText(history)}`;
+
+  const response = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent",
+    {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: message }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      })
+    }
+  );
+
+  if (!response.ok) throw new Error(`Gemini API respondeu ${response.status}: ${await response.text()}`);
+  const result = await response.json();
+  return result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Não consegui responder agora, tenta de novo.";
+}
+
+// ---------- Perguntas sobre dados existentes ----------
+
+async function fetchWorkspaceRecord(ownerId: string) {
   const rows = await restFetch(
     `/nexor_records?record_type=eq.setting&owner_id=eq.${ownerId}&data->>key=eq.workspace&select=id,data&limit=1`
   );
   const record = rows?.[0];
   if (!record) throw new Error("Workspace (nexor_records/setting) nao encontrado para o owner.");
+  return record;
+}
+
+async function answerQuery(ownerId: string, question: string, history: ChatTurn[]): Promise<string> {
+  const record = await fetchWorkspaceRecord(ownerId);
+  const db = record.data?.db || {};
+  const clientNames: Record<string, string> = Object.fromEntries((db.clients || []).map((c: any) => [c.id, c.name]));
+
+  const finance = (db.finance || []).slice(0, 300).map((item: any) => ({
+    title: item.title,
+    type: item.type,
+    value: item.value,
+    date: item.date,
+    status: item.status,
+    cliente: clientNames[item.clientId] || ""
+  }));
+  const tasks = (db.tasks || []).slice(0, 300).map((item: any) => ({
+    title: item.title,
+    dueDate: item.dueDate,
+    status: item.status,
+    priority: item.priority
+  }));
+  const leads = (db.leads || []).slice(0, 200).map((item: any) => ({
+    name: item.name,
+    stage: item.stage,
+    value: item.value,
+    nextDate: item.nextDate
+  }));
+
+  const now = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  const systemPrompt = `Você é o Nex AI, assistente do Nexor (app de organização/produtividade/financeiro), respondendo pelo WhatsApp. Data e hora atual (America/Sao_Paulo): ${now}.
+
+Histórico recente da conversa (use como contexto se a pergunta atual for de acompanhamento):
+${historyAsText(history)}
+
+Responda a pergunta do usuário SOMENTE com base nos dados JSON fornecidos abaixo — nunca invente valores. Se os dados não permitirem responder, diga isso claramente. Responda em português, direto, no máximo 3 frases, sem markdown (é WhatsApp).
+
+Lançamentos financeiros (finance): ${JSON.stringify(finance)}
+Tarefas (tasks): ${JSON.stringify(tasks)}
+Leads (leads): ${JSON.stringify(leads)}`;
+
+  const response = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent",
+    {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: question }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      })
+    }
+  );
+
+  if (!response.ok) throw new Error(`Gemini API respondeu ${response.status}: ${await response.text()}`);
+  const result = await response.json();
+  return result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Não consegui calcular isso com os dados atuais.";
+}
+
+// ---------- Gravar no workspace (nexor_records / record_type=setting) ----------
+
+async function appendRecord(ownerId: string, parsed: ParsedMessage): Promise<string> {
+  const record = await fetchWorkspaceRecord(ownerId);
 
   const db = record.data?.db || {};
   const today = new Date().toISOString().slice(0, 10);
@@ -214,6 +383,21 @@ async function appendRecord(ownerId: string, parsed: ParsedMessage): Promise<str
     };
     db.tasks.unshift(item);
     summary = `✅ Tarefa criada: ${item.title} — ${formatDate(item.dueDate)} ${item.time}`;
+  } else if (parsed.type === "habit") {
+    db.habits ||= [];
+    const item = {
+      id,
+      name: parsed.data.name || "Hábito via WhatsApp",
+      frequency: parsed.data.frequency || "Diária",
+      days: Array.isArray(parsed.data.days) && parsed.data.days.length ? parsed.data.days : ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"],
+      target: Number(parsed.data.target || 1),
+      streak: 0,
+      bestStreak: 0,
+      doneToday: false,
+      history: []
+    };
+    db.habits.unshift(item);
+    summary = `✅ Hábito criado: ${item.name} — ${item.frequency}`;
   } else if (parsed.type === "lead") {
     db.leads ||= [];
     const item = {
@@ -290,22 +474,6 @@ async function sendWhatsappReply(to: string, text: string) {
 }
 
 // ---------- Helpers Supabase ----------
-
-async function authAdmin(path: string, options: { method?: string; body?: unknown } = {}) {
-  const response = await fetch(`${SUPABASE_URL}/auth/v1${path}`, {
-    method: options.method || "GET",
-    headers: {
-      "content-type": "application/json",
-      apikey: SERVICE_ROLE_KEY,
-      authorization: `Bearer ${SERVICE_ROLE_KEY}`
-    },
-    body: options.body ? JSON.stringify(options.body) : undefined
-  });
-  const text = await response.text();
-  const data = text ? JSON.parse(text) : {};
-  if (!response.ok) throw new Error(data.msg || data.error_description || data.error || text || "Erro Auth Admin.");
-  return data;
-}
 
 async function restFetch(path: string, options: { method?: string; headers?: Record<string, string>; body?: unknown } = {}) {
   const response = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
