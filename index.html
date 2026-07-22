@@ -1600,6 +1600,7 @@
       text-transform: uppercase;
     }
 
+    @media (max-width: 860px) {
     body {
       --logo-max-height: 160px;
       --logo-opacity: 1;
@@ -1868,6 +1869,89 @@
       display: none;
     }
 
+
+    .dashboard-stage {
+      position: relative;
+      width: min(1080px, 100%);
+      margin: 0 auto;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .dashboard-stage::before {
+      display: none;
+    }
+
+    .dashboard-stage > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .dashboard-row {
+      margin-top: 14px;
+    }
+
+    .dashboard-priority {
+      min-height: 280px;
+      display: grid;
+      align-content: start;
+    }
+
+    .dashboard-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .dashboard-pulse .bar-chart {
+      margin-top: 12px;
+    }
+
+    .dashboard-compact-list .list-row {
+      padding-block: 9px;
+    }
+
+    .grid.metrics {
+      margin-top: 0;
+    }
+
+    .panel,
+    .metric,
+    .item-card,
+    .kanban-column,
+    .day-column,
+    .quadrant,
+    .mini-board,
+    .finance-card,
+    .habit-console,
+    .chart-tooltip,
+    dialog {
+      border-color: rgba(255,255,255,0.075);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.038), rgba(255,255,255,0.012)),
+        #030303;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.035);
+    }
+
+    .panel:hover,
+    .metric:hover,
+    .item-card:hover,
+    .mini-board:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.15);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.045);
+    }
+
+    .metric strong {
+      color: #fff;
+    }
+    }
+
+
     .app-tabs {
       width: min(940px, 100%);
       position: relative;
@@ -2004,86 +2088,6 @@
     .app-tabs button[data-module="team"] { --tab-accent: #d8d8ff; }
     .app-tabs button[data-module="reports"] { --tab-accent: #86c5ff; }
     .app-tabs button[data-module="settings"] { --tab-accent: #d6d6d6; }
-
-    .dashboard-stage {
-      position: relative;
-      width: min(1080px, 100%);
-      margin: 0 auto;
-      padding: 0;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
-    }
-
-    .dashboard-stage::before {
-      display: none;
-    }
-
-    .dashboard-stage > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .dashboard-row {
-      margin-top: 14px;
-    }
-
-    .dashboard-priority {
-      min-height: 280px;
-      display: grid;
-      align-content: start;
-    }
-
-    .dashboard-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .dashboard-pulse .bar-chart {
-      margin-top: 12px;
-    }
-
-    .dashboard-compact-list .list-row {
-      padding-block: 9px;
-    }
-
-    .grid.metrics {
-      margin-top: 0;
-    }
-
-    .panel,
-    .metric,
-    .item-card,
-    .kanban-column,
-    .day-column,
-    .quadrant,
-    .mini-board,
-    .finance-card,
-    .habit-console,
-    .chart-tooltip,
-    dialog {
-      border-color: rgba(255,255,255,0.075);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.038), rgba(255,255,255,0.012)),
-        #030303;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.035);
-    }
-
-    .panel:hover,
-    .metric:hover,
-    .item-card:hover,
-    .mini-board:hover {
-      transform: translateY(-1px);
-      border-color: rgba(255,255,255,0.15);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.045);
-    }
-
-    .metric strong {
-      color: #fff;
-    }
 
     body[data-theme="light"] {
       background: var(--bg);
