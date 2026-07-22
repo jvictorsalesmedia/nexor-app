@@ -287,23 +287,52 @@
       padding: 0;
     }
 
-    .nex-ai-trigger {
-      position: relative;
-      overflow: hidden;
+    .nex-ai-fab {
+      position: fixed;
+      left: 20px;
+      bottom: 20px;
+      z-index: 55;
+      width: 60px;
+      height: 60px;
       padding: 0;
-      border-color: color-mix(in srgb, #5eecff 30%, var(--line));
+      border: 0;
+      border-radius: 18px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.5), 0 0 0 1px rgba(94,236,255,0.28), 0 0 26px rgba(94,236,255,0.24);
+      animation: nexAiFabPulse 3.2s ease-in-out infinite;
+      transition: transform 180ms ease, box-shadow 180ms ease;
     }
 
-    .nex-ai-trigger img {
+    .nex-ai-fab img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 200ms ease;
     }
 
-    .nex-ai-trigger:hover img {
-      transform: scale(1.08);
+    .nex-ai-fab:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(94,236,255,0.4), 0 0 34px rgba(94,236,255,0.38);
+    }
+
+    .nex-ai-fab.hidden {
+      display: none;
+    }
+
+    @keyframes nexAiFabPulse {
+      0%, 100% { box-shadow: 0 14px 34px rgba(0,0,0,0.5), 0 0 0 1px rgba(94,236,255,0.28), 0 0 26px rgba(94,236,255,0.24); }
+      50% { box-shadow: 0 14px 34px rgba(0,0,0,0.5), 0 0 0 1px rgba(94,236,255,0.5), 0 0 40px rgba(94,236,255,0.5); }
+    }
+
+    @media (max-width: 620px) {
+      .nex-ai-fab {
+        left: 14px;
+        bottom: 14px;
+        width: 52px;
+        height: 52px;
+        border-radius: 15px;
+      }
     }
 
     .auth-actions,
@@ -2419,9 +2448,6 @@
           <button id="themeBtn" class="btn icon" type="button" title="Alternar tema" data-icon="moon"></button>
           <button id="notifyBtn" class="btn icon" type="button" title="Notificações" data-icon="bell"></button>
           <span id="notifyDot" class="notification-dot hidden"></span>
-          <button id="nexAiBtn" class="btn icon nex-ai-trigger" type="button" title="Nex AI — converse, crie e peça relatórios">
-            <img src="/nex-ai-badge.svg" alt="Nex AI" />
-          </button>
           <button id="topTaskBtn" class="btn accent" type="button" data-open="task" data-icon="plus">Tarefa</button>
         </div>
       </div>
@@ -2430,6 +2456,9 @@
     </main>
   </div>
 
+  <button id="nexAiFab" class="nex-ai-fab hidden" type="button" title="Nex AI — converse, crie e peça relatórios">
+    <img src="/nex-ai-badge.svg" alt="Nex AI" />
+  </button>
   <div id="modalRoot"></div>
   <div id="toastStack" class="toast-stack" aria-live="polite"></div>
 
@@ -3272,7 +3301,7 @@
         saveDb();
         renderApp();
       });
-      $("#nexAiBtn").addEventListener("click", openNexAiModal);
+      $("#nexAiFab").addEventListener("click", openNexAiModal);
       $("#globalSearch").addEventListener("input", renderSearch);
       document.addEventListener("click", event => {
         const open = event.target.closest("[data-open]");
@@ -3579,6 +3608,7 @@
       document.body.dataset.theme = db.theme || "light";
       $("#authView").classList.add("hidden");
       $("#appShell").classList.remove("hidden");
+      $("#nexAiFab").classList.toggle("hidden", !cloudEnabled());
       activeModule = canAccess(activeModule) ? activeModule : "dashboard";
       renderApp();
     }
@@ -3593,6 +3623,7 @@
       signupRequests = [];
       $("#appShell").classList.add("hidden");
       $("#authView").classList.remove("hidden");
+      $("#nexAiFab").classList.add("hidden");
       $("#password").value = "";
       $("#authError").textContent = "";
     }
