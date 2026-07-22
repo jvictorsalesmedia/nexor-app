@@ -2140,6 +2140,7 @@
         <button class="btn primary" type="submit" data-icon="log-in">Entrar</button>
         <button id="signupRequestBtn" class="btn" type="button" data-icon="plus">Solicitar acesso</button>
       </div>
+      <button id="forgotPasswordBtn" class="btn" type="button" style="margin-top:8px;width:100%">Esqueci minha senha</button>
       <div id="authError" class="auth-error" role="alert"></div>
     </form>
 
@@ -2996,6 +2997,7 @@
       $("#loginForm").addEventListener("submit", handleLogin);
       $("#setPasswordForm").addEventListener("submit", acceptInviteAndSetPassword);
       $("#signupRequestBtn")?.addEventListener("click", openSignupRequestModal);
+      $("#forgotPasswordBtn")?.addEventListener("click", handleForgotPassword);
 
       if (pendingAuthHash) {
         // Limpa o hash da URL (tokens sensíveis) antes de qualquer outra
@@ -3088,7 +3090,6 @@
               ${field("E-mail", "email", "", "email", true)}
               ${field("WhatsApp", "whatsapp")}
               ${field("Usuário de acesso desejado", "accessUsername")}
-              ${field("Senha de acesso", "password", "", "password", true)}
               <div class="field wide">
                 <label>Foto do responsável</label>
                 <input name="photo" type="file" accept="image/png,image/jpeg,image/webp" required>
@@ -3128,7 +3129,6 @@
           email: String(formData.get("email") || "").trim().toLowerCase(),
           whatsapp: String(formData.get("whatsapp") || "").trim(),
           accessUsername: String(formData.get("accessUsername") || "").trim().toLowerCase(),
-          password: String(formData.get("password") || ""),
           photoDataUrl: await imageFileToDataUrl(photo)
         };
         const response = await fetch("/api/signup-request", {
@@ -3170,6 +3170,31 @@
         };
         reader.readAsDataURL(file);
       });
+    }
+
+    async function handleForgotPassword() {
+      if (!cloudEnabled()) {
+        alert("Nexor Cloud não está ativo neste ambiente.");
+        return;
+      }
+      const suggestion = $("#email").value.trim();
+      const identifier = prompt("Digite seu email ou usuário de acesso:", suggestion);
+      if (!identifier) return;
+
+      try {
+        const response = await fetch("/api/forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier: identifier.trim().toLowerCase() })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Não foi possível redefinir a senha.");
+        $("#authError").textContent = "";
+        alert("Se esse email/usuário existir, uma nova senha provisória foi enviada por email.");
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Não foi possível redefinir a senha.");
+      }
     }
 
     async function handleLogin(event) {

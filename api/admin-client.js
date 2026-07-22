@@ -146,19 +146,21 @@ async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId) {
   );
   if (!request) throw new Error("Pre-cadastro nao encontrado.");
   if (request.status !== "pendente") throw new Error("Este pre-cadastro ja foi analisado.");
-  if (!request.auth_user_id) throw new Error("Pre-cadastro sem usuario vinculado.");
 
   const businessName = request.business_name || `Conta ${request.responsible_name || request.email.split("@")[0]}`;
   const responsibleName = request.responsible_name || request.email.split("@")[0];
   const accessUsername = request.access_username || request.email.split("@")[0];
   const slug = slugify(body.slug || `${businessName}-${String(request.id).slice(0, 8)}`);
 
-  // O usuario Auth ja existe desde o pre-cadastro (com a senha que a propria
-  // pessoa escolheu) — a aprovacao so ativa o perfil e completa o cadastro do
-  // cliente, nunca cria uma conta nova nem mexe em senha.
-  await authAdmin(supabaseUrl, serviceKey, `/admin/users/${request.auth_user_id}`, {
-    method: "PUT",
+  // A conta so eh criada agora, na aprovacao, com uma senha provisoria
+  // aleatoria que so vai pro email da pessoa — nunca fica guardada por nos.
+  const tempPassword = generateTempPassword();
+  const auth = await authAdmin(supabaseUrl, serviceKey, "/admin/users", {
+    method: "POST",
     body: {
+      email: request.email,
+      password: tempPassword,
+      email_confirm: true,
       user_metadata: {
         full_name: responsibleName,
         business_name: businessName,
@@ -167,9 +169,11 @@ async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId) {
       }
     }
   });
+  const user = auth.user || auth;
+  if (!user?.id) throw new Error("Usuario nao foi criado no Supabase Auth.");
 
   await upsertProfile(supabaseUrl, serviceKey, {
-    id: request.auth_user_id,
+    id: user.id,
     email: request.email,
     full_name: responsibleName,
     gender: "neutral",
@@ -178,7 +182,7 @@ async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId) {
   });
 
   const client = await upsertClient(supabaseUrl, serviceKey, {
-    auth_user_id: request.auth_user_id,
+    auth_user_id: user.id,
     business_name: businessName,
     responsible_name: responsibleName,
     document: request.document || "",
@@ -204,12 +208,13 @@ async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId) {
       decision_note: String(body.notes || ""),
       reviewed_by: callerId,
       reviewed_at: new Date().toISOString(),
-      created_client_id: client.id
+      created_client_id: client.id,
+      auth_user_id: user.id
     }
   );
 
   try {
-    await sendApprovalEmail(request.email);
+    await sendCredentialsEmail(request.email, tempPassword, { reset: false });
   } catch (error) {
     console.error("Falha ao enviar email de aprovacao:", error.message);
   }
@@ -220,12 +225,6 @@ async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId) {
 async function rejectSignupRequest(supabaseUrl, serviceKey, body, callerId) {
   const requestId = String(body.requestId || "");
   if (!requestId) throw new Error("Pre-cadastro nao informado.");
-
-  const existing = await restSingle(
-    supabaseUrl,
-    serviceKey,
-    `/nexor_signup_requests?id=eq.${encodeURIComponent(requestId)}&select=auth_user_id`
-  );
 
   const request = await restPatch(
     supabaseUrl,
@@ -239,20 +238,17 @@ async function rejectSignupRequest(supabaseUrl, serviceKey, body, callerId) {
     }
   );
 
-  // Um pedido reprovado nao deve deixar uma conta Auth pra tras — a pessoa
-  // nunca teve acesso liberado, entao remover o usuario e seguro.
-  if (existing?.auth_user_id) {
-    try {
-      await authAdmin(supabaseUrl, serviceKey, `/admin/users/${existing.auth_user_id}`, { method: "DELETE" });
-    } catch (error) {
-      console.error("Falha ao remover usuario reprovado:", error.message);
-    }
-  }
-
   return { request };
 }
 
-async function sendApprovalEmail(email) {
+function generateTempPassword() {
+  const crypto = require("crypto");
+  // 10 caracteres alfanumericos, gerados com crypto (nao Math.random) —
+  // suficiente pra uma senha provisoria que a pessoa vai trocar depois.
+  return crypto.randomBytes(8).toString("base64").replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
+}
+
+async function sendCredentialsEmail(email, password, { reset }) {
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
   if (!user || !pass) throw new Error("GMAIL_USER/GMAIL_APP_PASSWORD nao configurados.");
@@ -263,11 +259,15 @@ async function sendApprovalEmail(email) {
     auth: { user, pass }
   });
 
+  const text = reset
+    ? `Sua senha foi redefinida. Usuário: ${email}. Nova senha provisória: ${password}. Para mais dúvidas, 5522998229144`
+    : `Você já pode acessar o Nexor. Usuário: ${email}. Senha provisória: ${password}. Para mais dúvidas, 5522998229144`;
+
   await transporter.sendMail({
     from: `Nexor <${user}>`,
     to: email,
-    subject: "Acesso liberado — Nexor",
-    text: "Você já pode acessar o nexor com o usuário e senha que criou. Para mais dúvidas, 5522998229144"
+    subject: reset ? "Senha redefinida — Nexor" : "Acesso liberado — Nexor",
+    text
   });
 }
 

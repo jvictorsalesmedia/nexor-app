@@ -2,56 +2,36 @@ NEXOR — STATUS ATUAL (este repositório: jvictorsalesmedia/nexor-app)
 ======================================================================
 
 ------------------------------------------------------------
-PASSO 1 — GITHUB: OK
+COMO FUNCIONA O PRÉ-CADASTRO AGORA (fluxo simplificado)
 ------------------------------------------------------------
-Este commit traz a mudança no pré-cadastro: agora a pessoa já escolhe a
-senha ao solicitar acesso, e assim que você aprova ela já consegue logar
-direto com esse email+senha (sem etapa extra). A senha nunca é guardada
-em texto puro — vai direto pro Supabase Auth.
+1. A pessoa preenche "Solicitar acesso" (sem senha nenhuma).
+2. Você aprova ou nega em "Usuários/acessos".
+3. Ao aprovar: o sistema gera uma senha provisória aleatória e manda
+   por email (de gestaonexorapp@gmail.com) pro endereço que a pessoa
+   colocou no pré-cadastro. A senha nunca é guardada por nós.
+4. A pessoa loga normal no site com esse email + a senha do email.
+5. Ela pode trocar a própria senha em Configurações a qualquer hora.
+6. Se esquecer a senha: clica em "Esqueci minha senha" na tela de
+   login, informa o email/usuário, e recebe uma senha provisória NOVA
+   por email (sempre gera uma nova, nunca reaproveita a antiga).
 
-------------------------------------------------------------
-PASSO 2 — VERCEL: falta redeploy + 2 variáveis novas
-------------------------------------------------------------
-Depois que esse commit chegar no GitHub, a Vercel deve criar um novo
-deployment sozinha. Se não criar em 1-2 minutos, vai em Deployments >
-"..." no topo > Redeploy (sem "Use existing Build Cache").
-
-ANTES de redeployar, adiciona 2 variáveis novas em Settings >
-Environment Variables (usadas para mandar o email de "acesso liberado"):
-
-GMAIL_USER
-gestaonexorapp@gmail.com
-
-GMAIL_APP_PASSWORD
-sbamxtenswmwarxt
-
-As 3 variáveis do Supabase continuam as mesmas de antes:
-
-SUPABASE_URL
-https://wjqenmmdhvvvrhzkbtms.supabase.co
-
-SUPABASE_ANON_KEY
-(a mesma já configurada — não precisa mexer)
-
-SUPABASE_SERVICE_ROLE_KEY
-(a mesma já configurada — não precisa mexer)
+Nada disso depende de ir na Vercel ou no Supabase — é tudo pela
+própria tela do Nexor.
 
 ------------------------------------------------------------
-PASSO 3 — SUPABASE: banco já atualizado
+VARIÁVEIS DE AMBIENTE (já devem estar configuradas)
 ------------------------------------------------------------
-A migration nova (coluna auth_user_id em nexor_signup_requests) já foi
-aplicada. Nada a fazer aqui.
+SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (do projeto
+wjqenmmdhvvvrhzkbtms) + GMAIL_USER (gestaonexorapp@gmail.com) e
+GMAIL_APP_PASSWORD (senha de app do Gmail). Se alguma faltar, edita em
+Vercel → Settings → Environment Variables e faz Redeploy.
 
 ------------------------------------------------------------
-COMO TESTAR O FLUXO NOVO
+COMO TESTAR
 ------------------------------------------------------------
-1. Na tela de login, clica em "Solicitar acesso" e preenche tudo,
-   incluindo uma senha de teste.
-2. Tenta logar com esse email/senha — deve aparecer bloqueado
-   ("login inativo"), porque ainda não foi aprovado.
-3. Loga como admin, vai em "Usuários/acessos", aprova esse pré-cadastro.
-4. Confere se chegou um email em gestaonexorapp@gmail.com > caixa de
-   saída (ou na caixa da pessoa testada) avisando que o acesso foi
-   liberado.
-5. Tenta logar de novo com o mesmo email/senha do passo 1 — agora deve
-   entrar direto, sem pedir pra trocar senha.
+1. "Solicitar acesso" com um email de teste.
+2. Aprovar em "Usuários/acessos".
+3. Conferir se chegou o email com a senha provisória.
+4. Logar com esse email + senha do email.
+5. Testar "Esqueci minha senha" na tela de login e conferir que chega
+   um email novo com outra senha.
