@@ -3248,6 +3248,11 @@
       $("#signupRequestBtn")?.addEventListener("click", openSignupRequestModal);
       $("#forgotPasswordBtn")?.addEventListener("click", handleForgotPassword);
 
+      if (!pendingAuthHash && new URLSearchParams(location.search).get("signup") === "1") {
+        history.replaceState(null, "", location.pathname);
+        openSignupRequestModal();
+      }
+
       if (pendingAuthHash) {
         // Limpa o hash da URL (tokens sensíveis) antes de qualquer outra
         // coisa, e mostra a tela de definir senha em vez do login normal.

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nexor — organização, financeiro e produtividade com IA</title>
+<meta name="description" content="Nexor: tarefas, projetos, leads, clientes, financeiro e equipe num só lugar, com o Nex AI cuidando de criação, relatórios e conselhos por texto." />
+<link rel="icon" href="/nexor-mark-transparent.png" />
+<style>
+  :root {
+    --bg: #030303;
+    --panel: #111111;
+    --surface: #0d0d0d;
+    --text: #f4f4f2;
+    --muted: #9d9d9a;
+    --line: rgba(255,255,255,0.1);
+    --accent: #ffffff;
+    --cyan: #5eecff;
+    --radius: 16px;
+    --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    letter-spacing: 0;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 50% -10%, rgba(255,255,255,0.07), transparent 40%),
+      linear-gradient(180deg, #000 0%, #050505 50%, #000 100%);
+  }
+
+  a { color: inherit; }
+
+  img { max-width: 100%; display: block; }
+
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 22px;
+  }
+
+  header.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  .brand img { width: 30px; height: 30px; object-fit: contain; }
+
+  .topbar nav {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    font-size: 0.86rem;
+    color: var(--muted);
+  }
+
+  .topbar nav a:hover { color: var(--text); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+  }
+
+  .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.3); }
+
+  .btn.primary {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+  }
+
+  .btn.cyan {
+    background: linear-gradient(135deg, #22c9e8, #5eecff);
+    color: #001417;
+    border-color: transparent;
+    box-shadow: 0 0 32px rgba(94,236,255,0.28);
+  }
+
+  .btn.small { padding: 8px 14px; font-size: 0.8rem; }
+
+  section { padding: 96px 0; }
+
+  .hero { padding: 96px 0 70px; text-align: center; }
+
+  .hero .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 22px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5.4vw, 3.6rem);
+    line-height: 1.08;
+    font-weight: 760;
+    margin: 0 auto 18px;
+    max-width: 760px;
+  }
+
+  .hero p.lead {
+    color: var(--muted);
+    font-size: 1.08rem;
+    max-width: 620px;
+    margin: 0 auto 34px;
+    line-height: 1.55;
+  }
+
+  .hero-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .hero-note {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  .mock {
+    margin: 64px auto 0;
+    max-width: 980px;
+    border-radius: 22px;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, #101010, #050505);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.55);
+    overflow: hidden;
+  }
+
+  .mock-bar {
+    display: flex;
+    gap: 6px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mock-bar span {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: rgba(255,255,255,0.16);
+  }
+
+  .mock-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 22px;
+  }
+
+  .mock-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .mock-card .label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .mock-card .value { font-size: 1.2rem; font-weight: 700; margin-top: 6px; }
+  .mock-card .delta { font-size: 0.72rem; color: #7ee7a8; margin-top: 4px; }
+
+  .section-head { text-align: center; max-width: 620px; margin: 0 auto 46px; }
+  .section-head .eyebrow {
+    font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+  .section-head h2 { font-size: clamp(1.7rem, 3.4vw, 2.3rem); margin: 0 0 12px; font-weight: 720; }
+  .section-head p { color: var(--muted); line-height: 1.6; }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .feature-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+
+  .feature-card .icon-dot {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    border: 1px solid var(--line);
+    margin-bottom: 14px;
+    font-size: 1.1rem;
+  }
+
+  .feature-card h3 { margin: 0 0 6px; font-size: 1rem; }
+  .feature-card p { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.55; }
+
+  .ai-section {
+    background: radial-gradient(circle at 20% 0%, rgba(94,236,255,0.09), transparent 55%), #050505;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ai-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    align-items: center;
+  }
+
+  .ai-badge {
+    width: 96px; height: 96px;
+    border-radius: 22px;
+    margin-bottom: 22px;
+  }
+
+  .ai-inner h2 {
+    font-size: clamp(1.8rem, 3.6vw, 2.5rem);
+    margin: 0 0 16px;
+    font-weight: 760;
+  }
+
+  .ai-inner > div:first-child p.lead {
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 26px;
+    max-width: 460px;
+  }
+
+  .ai-list {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 30px;
+  }
+
+  .ai-list li {
+    list-style: none;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.92rem;
+    color: var(--text);
+  }
+
+  .ai-list li::before {
+    content: "";
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 10px rgba(94,236,255,0.7);
+    margin-top: 7px;
+    flex: 0 0 auto;
+  }
+
+  .ai-list li strong { display: block; margin-bottom: 2px; }
+  .ai-list li span { color: var(--muted); }
+
+  .ai-chat-mock {
+    background: var(--panel);
+    border: 1px solid rgba(94,236,255,0.22);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+
+  .ai-chat-mock .chat-head {
+    display: flex; align-items: center; gap: 10px;
+    padding-bottom: 14px; margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.86rem; font-weight: 600;
+  }
+
+  .ai-chat-mock .chat-head img { width: 26px; height: 26px; border-radius: 7px; }
+
+  .bubble {
+    max-width: 84%;
+    padding: 10px 13px;
+    border-radius: 14px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    margin-bottom: 10px;
+  }
+
+  .bubble.user {
+    margin-left: auto;
+    background: #fff;
+    color: #000;
+  }
+
+  .bubble.ai {
+    background: color-mix(in srgb, var(--cyan) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cyan) 26%, var(--line));
+  }
+
+  .modules-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .module-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 18px;
+    align-items: baseline;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .module-row:last-child { border-bottom: 0; }
+
+  .module-row .group-tag {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  .module-row .items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .module-row .items span {
+    font-size: 0.82rem;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+  }
+
+  .cta-section {
+    text-align: center;
+  }
+
+  .cta-box {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 64px 32px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .cta-box h2 { font-size: clamp(1.7rem, 3.4vw, 2.3rem); margin: 0 0 14px; font-weight: 760; }
+  .cta-box p { color: var(--muted); margin: 0 0 30px; line-height: 1.6; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 30px 0;
+  }
+
+  footer .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 860px) {
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .ai-inner { grid-template-columns: 1fr; gap: 34px; }
+    .mock-grid { grid-template-columns: 1fr 1fr; }
+    .module-row { grid-template-columns: 1fr; gap: 6px; }
+    .topbar nav { display: none; }
+  }
+
+  @media (max-width: 560px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .mock-grid { grid-template-columns: 1fr 1fr; }
+    section { padding: 64px 0; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <img src="/nexor-mark-transparent.png" alt="Nexor" />
+        <span>Nexor</span>
+      </div>
+      <nav>
+        <a href="#recursos">Recursos</a>
+        <a href="#nex-ai">Nex AI</a>
+        <a href="/app" class="btn small">Entrar</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <span class="kicker">✦ Organização, financeiro e produtividade com IA</span>
+      <h1>Toda a sua operação num só lugar — e uma IA que executa o que você pede.</h1>
+      <p class="lead">Tarefas, projetos, leads, clientes, financeiro e equipe organizados no Nexor. Peça pro Nex AI criar, calcular, gerar relatório em PDF ou só dar um conselho — em texto, sem enrolação.</p>
+      <div class="hero-actions">
+        <a href="/app?signup=1" class="btn primary">Solicitar acesso</a>
+        <a href="/app" class="btn">Já tenho conta</a>
+      </div>
+      <p class="hero-note">Acesso liberado após aprovação do administrador — sem cadastro de cartão.</p>
+
+      <div class="mock">
+        <div class="mock-bar"><span></span><span></span><span></span></div>
+        <div class="mock-grid">
+          <div class="mock-card"><div class="label">Prioridades</div><div class="value">6</div><div class="delta">2 atrasadas</div></div>
+          <div class="mock-card"><div class="label">Hoje</div><div class="value">3</div><div class="delta">Quarta-feira</div></div>
+          <div class="mock-card"><div class="label">Hábitos</div><div class="value">4/5</div><div class="delta">concluídos hoje</div></div>
+          <div class="mock-card"><div class="label">Saldo previsto</div><div class="value">R$ 4.680</div><div class="delta">receita − despesa</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="recursos">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">O que tem dentro</div>
+        <h2>Um sistema, todas as frentes do negócio</h2>
+        <p>Cada módulo já nasce conectado aos outros — uma tarefa vira lançamento financeiro, um lead vira cliente, um hábito vira rotina acompanhada.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon-dot">✓</div>
+          <h3>Tarefas, Kanban e Agenda</h3>
+          <p>Prioridades do dia, quadro Kanban, planner semanal, Matriz de Eisenhower e integração de um clique com o Google Agenda.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon-dot">◎</div>
+          <h3>Leads e Clientes</h3>
+          <p>Funil comercial por estágio, cadastro de clientes, histórico de contato e vínculo direto com projetos e financeiro.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon-dot">$</div>
+          <h3>Financeiro</h3>
+          <p>Receitas, despesas, contas a pagar e receber, despesas por categoria e previsão de saldo dos próximos 30 dias.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon-dot">↻</div>
+          <h3>Hábitos e rotina</h3>
+          <p>Acompanhamento diário de hábitos, sequência (streak) e progresso — pessoal ou da equipe.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon-dot">▤</div>
+          <h3>Produção e Projetos</h3>
+          <p>Demandas criativas com captação, edição, aprovação e entrega, além de projetos com orçamento e progresso.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon-dot">⚭</div>
+          <h3>Equipe e Relatórios</h3>
+          <p>Cadastro de funcionários, controle de acesso por perfil e relatórios de produtividade, atrasos e lucro.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="nex-ai" class="ai-section">
+    <div class="wrap ai-inner">
+      <div>
+        <img src="/nex-ai-badge.svg" alt="Nex AI" class="ai-badge" />
+        <h2>Nex AI: você escreve, ela executa.</h2>
+        <p class="lead">O Nex AI é o assistente do Nexor — converse em texto livre e ele interpreta, cria e responde. Sem formulário, sem menu: só descreve o que precisa.</p>
+        <ul class="ai-list">
+          <li><strong>Cria registros por texto</strong><span>"Reunião com cliente X sexta 15h" vira tarefa. "Recebi 400 do cliente Y" vira lançamento financeiro. Também cria leads e hábitos.</span></li>
+          <li><strong>Responde sobre seus dados</strong><span>"Quanto vou receber essa semana?" ou "qual cliente mais gastou comigo?" — ele calcula em cima do que já está no seu Nexor.</span></li>
+          <li><strong>Gera relatório em PDF na hora</strong><span>"Emitir relatório dos meus gastos do mês passado" e o PDF já é baixado, pronto — financeiro, tarefas ou leads.</span></li>
+          <li><strong>Conversa e aconselha</strong><span>Dúvidas de gestão, marketing, produtividade ou qualquer assunto — o Nex AI assume o papel de especialista e ajuda a pensar.</span></li>
+        </ul>
+        <a href="/app?signup=1" class="btn cyan">Solicitar acesso</a>
+      </div>
+      <div class="ai-chat-mock">
+        <div class="chat-head"><img src="/nex-ai-badge.svg" alt="" /> Nex AI</div>
+        <div class="bubble user">emitir relatório dos meus gastos do mês passado</div>
+        <div class="bubble ai">📄 Relatório financeiro gerado: 01/06 a 30/06 — receita R$ 12.400,00, despesa R$ 5.180,00, saldo R$ 7.220,00.</div>
+        <div class="bubble user">quanto vou receber essa semana?</div>
+        <div class="bubble ai">Você tem R$ 1.850,00 em receitas pendentes com vencimento nos próximos 7 dias, principalmente do cliente Aurora Studio.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Como é organizado</div>
+        <h2>Tudo agrupado do jeito que você trabalha</h2>
+      </div>
+      <div class="modules-list">
+        <div class="module-row">
+          <div class="group-tag">Visão geral</div>
+          <div class="items"><span>Dashboard</span></div>
+        </div>
+        <div class="module-row">
+          <div class="group-tag">Trabalho</div>
+          <div class="items"><span>Tarefas</span><span>Projetos</span><span>Kanban</span><span>Agenda</span><span>Matriz de Eisenhower</span><span>Produção</span><span>Hábitos</span></div>
+        </div>
+        <div class="module-row">
+          <div class="group-tag">Comercial</div>
+          <div class="items"><span>Leads</span><span>Clientes</span></div>
+        </div>
+        <div class="module-row">
+          <div class="group-tag">Financeiro</div>
+          <div class="items"><span>Receitas e despesas</span><span>Previsão de saldo</span></div>
+        </div>
+        <div class="module-row">
+          <div class="group-tag">Gestão</div>
+          <div class="items"><span>Usuários / acessos</span><span>Equipe</span><span>Relatórios</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="wrap">
+      <div class="cta-box">
+        <h2>Pronto pra organizar tudo num lugar só?</h2>
+        <p>Preencha a solicitação de acesso — o administrador aprova e você recebe login e senha por e-mail na hora.</p>
+        <a href="/app?signup=1" class="btn primary">Solicitar acesso</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>© <span id="year"></span> Nexor</span>
+      <span>Dúvidas: 5522998229144</span>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

@@ -62,7 +62,7 @@ async function createTeamUser(supabaseUrl, serviceKey, body, callerId, siteOrigi
     throw new Error("Informe nome e e-mail.");
   }
 
-  const redirectTo = `${siteOrigin}/`;
+  const redirectTo = `${siteOrigin}/app`;
   const auth = await authAdmin(supabaseUrl, serviceKey, `/invite?redirect_to=${encodeURIComponent(redirectTo)}`, {
     method: "POST",
     body: {
@@ -98,7 +98,7 @@ async function updateTeamUserPassword(supabaseUrl, serviceKey, anonKey, body, ca
   const profile = await restSingle(supabaseUrl, serviceKey, `/nexor_profiles?id=eq.${encodeURIComponent(userId)}&select=email`);
   if (!profile?.email) throw new Error("Usuario nao encontrado.");
 
-  const redirectTo = `${siteOrigin}/`;
+  const redirectTo = `${siteOrigin}/app`;
   await authAdmin(supabaseUrl, anonKey, `/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
     method: "POST",
     body: { email: profile.email }
