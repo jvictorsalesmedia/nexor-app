@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Política de Privacidade — Nexor</title>
+<link rel="icon" href="/nexor-mark-transparent.png" />
+<style>
+  :root {
+    --bg: #030303;
+    --panel: #111111;
+    --text: #f4f4f2;
+    --muted: #9d9d9a;
+    --line: rgba(255,255,255,0.1);
+    --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    line-height: 1.65;
+  }
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 56px 22px 100px;
+  }
+  a { color: #5eecff; }
+  h1 { font-size: 1.9rem; margin-bottom: 6px; }
+  .updated { color: var(--muted); font-size: 0.86rem; margin-bottom: 40px; }
+  h2 { font-size: 1.15rem; margin-top: 40px; margin-bottom: 10px; }
+  p, li { color: #d8d8d5; font-size: 0.94rem; }
+  ul { padding-left: 20px; }
+  .back { display: inline-block; margin-bottom: 30px; color: var(--muted); font-size: 0.86rem; text-decoration: none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="/" class="back">← Voltar para o Nexor</a>
+    <h1>Política de Privacidade</h1>
+    <p class="updated">Última atualização: julho de 2026</p>
+
+    <p>Esta política explica como o <strong>Nexor</strong> (app de organização, rotina, projetos, financeiro e produtividade, incluindo o assistente Nex AI) coleta, usa e protege as informações dos usuários.</p>
+
+    <h2>Quais dados coletamos</h2>
+    <ul>
+      <li>Dados de cadastro: nome do responsável, nome do negócio, e-mail, número de WhatsApp e foto, informados no pré-cadastro.</li>
+      <li>Dados operacionais que você mesmo cadastra no uso do app: tarefas, projetos, leads, clientes, lançamentos financeiros, hábitos e equipe.</li>
+      <li>Mensagens enviadas ao Nex AI (pelo site ou, quando habilitado, pelo WhatsApp), para interpretar o pedido e criar registros, responder perguntas ou gerar relatórios.</li>
+    </ul>
+
+    <h2>Como usamos os dados</h2>
+    <p>Os dados são usados exclusivamente para operar o Nexor: organizar as informações do seu negócio, permitir login e controle de acesso, e permitir que o Nex AI interprete pedidos em texto (via API do Google Gemini) para criar tarefas, lançamentos, leads, hábitos, responder perguntas sobre seus próprios dados ou gerar relatórios em PDF.</p>
+    <p>Quando o Nex AI processa uma mensagem (seja digitada no site ou recebida por WhatsApp), o texto da mensagem é enviado à API do Google Gemini apenas para interpretação — não é usado para treinar modelos de terceiros nem compartilhado para qualquer outra finalidade.</p>
+
+    <h2>Armazenamento</h2>
+    <p>Os dados ficam armazenados em banco de dados gerenciado (Supabase/PostgreSQL), com controle de acesso por login e senha. Senhas nunca são armazenadas em texto simples pela equipe do Nexor.</p>
+
+    <h2>Compartilhamento com terceiros</h2>
+    <p>Não vendemos nem compartilhamos seus dados com terceiros para fins comerciais. Os únicos serviços de terceiros envolvidos no funcionamento do Nexor são: Supabase (banco de dados e autenticação), Google Gemini (interpretação de texto do Nex AI) e, quando habilitado, a API do WhatsApp Business (Meta) para envio e recebimento de mensagens.</p>
+
+    <h2>Seus direitos</h2>
+    <p>Você pode solicitar a qualquer momento a correção ou exclusão dos seus dados, ou esclarecer dúvidas sobre esta política, pelo e-mail <a href="mailto:gestaonexorapp@gmail.com">gestaonexorapp@gmail.com</a> ou pelo WhatsApp 5522998229144.</p>
+  </div>
+</body>
+</html>
