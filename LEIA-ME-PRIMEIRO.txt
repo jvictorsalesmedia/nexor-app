@@ -1,0 +1,57 @@
+NEXOR — STATUS ATUAL (este repositório: jvictorsalesmedia/nexor-app)
+======================================================================
+
+------------------------------------------------------------
+PASSO 1 — GITHUB: OK
+------------------------------------------------------------
+Este commit já traz a pasta api/ (que estava faltando) e a pasta
+supabase/ completas, iguais ao repositório Nexor-. Nada a fazer aqui.
+
+------------------------------------------------------------
+PASSO 2 — VERCEL: falta redeploy
+------------------------------------------------------------
+Depois que esse commit chegar no GitHub, a Vercel deve criar um novo
+deployment sozinha (é automático a cada push). Se não criar sozinha
+em 1-2 minutos, vai em Deployments > "..." no topo > Redeploy.
+
+Confirme que as 3 variáveis de ambiente já estão certas em
+Settings > Environment Variables:
+
+SUPABASE_URL
+https://wjqenmmdhvvvrhzkbtms.supabase.co
+
+SUPABASE_ANON_KEY
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqcWVubW1kaHZ2dnJoemtidG1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NzYzODMsImV4cCI6MjEwMDI1MjM4M30.FEY87BxueBBeomqrF5ENFSCPE6v8ZUq0IerGbO8OccE
+
+SUPABASE_SERVICE_ROLE_KEY
+(pega em supabase.com/dashboard/project/wjqenmmdhvvvrhzkbtms/settings/api-keys
+ — linha "secret", clique no olho, copie)
+
+------------------------------------------------------------
+PASSO 3 — SUPABASE: banco pronto, falta seu usuário admin
+------------------------------------------------------------
+O banco de dados (projeto "nexor-app" no Supabase, todas as tabelas
+e regras de segurança) já está pronto. Só falta criar seu login:
+
+1. Abra:
+   supabase.com/dashboard/project/wjqenmmdhvvvrhzkbtms/auth/users
+2. Clique no botão verde "Add user" > "Create new user"
+3. Preencha:
+   - Email: jvgsales72@gmail.com
+     (é o email que o sistema já reconhece como admin principal;
+      se quiser usar outro, avise o Claude antes de continuar)
+   - Password: escolha uma senha sua (não precisa contar pra ninguém)
+   - Marque a caixinha "Auto Confirm User"
+4. Clique em "Create user"
+5. Volte na conversa com o Claude e avise "criei o usuário" — ele
+   roda um comando simples que transforma esse usuário em admin
+   (não mexe na sua senha, só muda uma marcação no banco).
+
+------------------------------------------------------------
+DEPOIS DE TUDO ISSO
+------------------------------------------------------------
+O site deve estar no ar e funcionando de verdade (com o banco real,
+não só o modo local do navegador). Você entra com o email e senha
+que criou no Passo 3, e a partir da tela "Usuários / acessos" você
+cadastra os clientes normalmente (eles recebem um convite por email
+pra definir a própria senha — ninguém mais vê a senha deles).
