@@ -609,7 +609,7 @@
       justify-content: space-between;
       align-items: flex-end;
       gap: 16px;
-      margin-bottom: 18px;
+      margin-bottom: 28px;
     }
 
     .module-title h1 {
@@ -618,7 +618,7 @@
 
     .grid {
       display: grid;
-      gap: 16px;
+      gap: 22px;
     }
 
     .grid.metrics {
@@ -637,6 +637,10 @@
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
+    .dashboard-row {
+      margin-top: 28px;
+    }
+
     .panel,
     .metric,
     .item-card,
@@ -653,7 +657,7 @@
     }
 
     .panel {
-      padding: 16px;
+      padding: 24px;
     }
 
     .module-head,
@@ -834,10 +838,10 @@
     }
 
     .metric {
-      padding: 15px;
+      padding: 22px;
       display: grid;
-      gap: 7px;
-      min-height: 116px;
+      gap: 12px;
+      min-height: 128px;
       position: relative;
       overflow: hidden;
     }
@@ -876,7 +880,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
     }
 
     .section-title h2,
@@ -3811,7 +3815,7 @@
       const payable = sum(db.finance.filter(item => item.type === "Despesa" && item.status !== "Pago").map(item => item.value));
       const firstName = escapeHtml((currentUser.name || "").split(" ")[0] || "");
       return `
-        ${moduleHead(`Bem-vindo${firstName ? `, ${firstName}` : ""} 👋`, "Aqui está o resumo da sua operação hoje.", "")}
+        ${moduleHead(`Bem-vindo${firstName ? `, ${firstName}` : ""}`, "Aqui está o resumo da sua operação hoje.", "")}
         <div class="dashboard-stage">
           <div class="grid metrics">
             ${metric("Prioridades", pending.length, `${late.length} atrasadas • ${done.length} concluídas`, "check-square", pending.length ? "gold" : "success")}
