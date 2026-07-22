@@ -408,8 +408,22 @@
 
     .nav {
       display: grid;
-      gap: 5px;
+      gap: 14px;
       margin: 18px 0;
+    }
+
+    .nav-group {
+      display: grid;
+      gap: 5px;
+    }
+
+    .nav-group-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 11px;
+      margin-bottom: 2px;
     }
 
     .nav button {
@@ -2399,6 +2413,14 @@
       ["settings", "Configurações", "settings"]
     ];
     const collaboratorModules = new Set(["dashboard", "tasks", "kanban", "planner", "eisenhower", "habits", "reports", "settings"]);
+    const moduleGroups = [
+      ["Visão geral", ["dashboard"]],
+      ["Trabalho", ["tasks", "projects", "kanban", "planner", "eisenhower", "production", "habits"]],
+      ["Comercial", ["leads", "clients"]],
+      ["Financeiro", ["finance"]],
+      ["Gestão", ["accounts", "team", "reports"]],
+      ["Sistema", ["settings"]]
+    ];
 
     const icons = {
       "layout-dashboard": '<rect x="3" y="3" width="7" height="8" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="15" width="7" height="6" rx="1.5"></rect>',
@@ -3506,9 +3528,21 @@
     }
 
     function renderNav() {
-      $("#nav").innerHTML = modules
-        .filter(([id]) => canAccess(id))
-        .map(([id, label, iconName]) => `<button type="button" class="${activeModule === id ? "active" : ""}" data-module="${id}">${icon(iconName)}<span>${label}</span></button>`)
+      const byId = Object.fromEntries(modules.map(item => [item[0], item]));
+      $("#nav").innerHTML = moduleGroups
+        .map(([groupLabel, ids]) => {
+          const items = ids.filter(id => canAccess(id));
+          if (!items.length) return "";
+          return `
+            <div class="nav-group">
+              <span class="nav-group-label">${groupLabel}</span>
+              ${items.map(id => {
+                const [moduleId, label, iconName] = byId[id];
+                return `<button type="button" class="${activeModule === moduleId ? "active" : ""}" data-module="${moduleId}">${icon(iconName)}<span>${label}</span></button>`;
+              }).join("")}
+            </div>
+          `;
+        })
         .join("");
       $$("#nav button").forEach(button => button.addEventListener("click", () => {
         activeModule = button.dataset.module;
@@ -4233,11 +4267,11 @@
         </div>
         <div class="grid two" style="margin-bottom:14px">
           <section class="panel motion-card">
-            <div class="section-title"><h2>Fatura do cartão</h2><span class="chip">Aberta</span></div>
-            <p class="muted">Acompanhe o quanto já foi comprometido no mês.</p>
+            <div class="section-title"><h2>Despesas do mês</h2><span class="chip">${today().slice(0, 7)}</span></div>
+            <p class="muted">Total já comprometido no mês corrente.</p>
             <strong style="font-size:2rem">${money(expense)}</strong>
-            <div class="progress" data-chart-tip="Fatura do cartão|${money(expense)} comprometidos" style="--value:${Math.min(100, Math.round((expense / Math.max(1, revenue || expense)) * 100))}%"><span></span></div>
-            <div class="meta"><span>Pago ${money(db.finance.filter(item => item.type === "Despesa" && item.status === "Pago").reduce((total, item) => total + Number(item.value || 0), 0))}</span><span>Fecha dia 28</span></div>
+            <div class="progress" data-chart-tip="Despesas do mês|${money(expense)} comprometidos" style="--value:${Math.min(100, Math.round((expense / Math.max(1, revenue || expense)) * 100))}%"><span></span></div>
+            <div class="meta"><span>Pago ${money(db.finance.filter(item => item.type === "Despesa" && item.status === "Pago").reduce((total, item) => total + Number(item.value || 0), 0))}</span><span>${pending.filter(item => item.type === "Despesa").length} pendente(s)</span></div>
           </section>
           <section class="panel">
             <div class="section-title"><h2>Parcelas</h2><span class="chip gold">${pending.length}</span></div>
@@ -4247,15 +4281,15 @@
           </section>
         </div>
         <div class="panel" style="margin-bottom:14px">
-          <div class="section-title"><h2>Orçamento por categoria</h2><span class="chip accent">Mensal</span></div>
+          <div class="section-title"><h2>Despesas por categoria</h2><span class="chip accent">Este mês</span></div>
           <div class="budget-list">
             ${budgetRows().map(row => `
-              <div class="budget-row" data-chart-tip="${escapeHtml(row.category)}|${money(row.spent)} de ${money(row.limit)} (${row.percent}%)">
+              <div class="budget-row" data-chart-tip="${escapeHtml(row.category)}|${money(row.spent)}">
                 <strong>${escapeHtml(row.category)}</strong>
                 <div class="progress" style="--value:${row.percent}%"><span></span></div>
-                <span>${money(row.spent)} de ${money(row.limit)}</span>
+                <span>${money(row.spent)}</span>
               </div>
-            `).join("")}
+            `).join("") || emptyInline("Nenhuma despesa registrada este mês.")}
           </div>
         </div>
         <div class="grid metrics" style="margin-bottom:14px">
@@ -4780,17 +4814,17 @@
     }
 
     function budgetRows() {
-      const defaults = [
-        ["Alimentação", 900],
-        ["Transporte", 400],
-        ["Ferramentas", 1200],
-        ["Equipe", 3500]
-      ];
-      return defaults.map(([category, limit]) => {
-        const spent = sum(db.finance.filter(item => item.type === "Despesa" && (item.category || "").toLowerCase().includes(String(category).toLowerCase())).map(item => item.value));
-        const fallback = spent || Math.round(Number(limit) * (category === "Ferramentas" ? 0.72 : category === "Equipe" ? 0.34 : 0.48));
-        return { category, limit, spent: fallback, percent: Math.min(100, Math.round((fallback / Number(limit)) * 100)) };
-      });
+      const month = today().slice(0, 7);
+      const grouped = db.finance
+        .filter(item => item.type === "Despesa" && String(item.date || "").slice(0, 7) === month)
+        .reduce((acc, item) => {
+          const key = item.category || "Geral";
+          acc[key] = (acc[key] || 0) + Number(item.value || 0);
+          return acc;
+        }, {});
+      const rows = Object.entries(grouped).sort((a, b) => b[1] - a[1]).map(([category, spent]) => ({ category, spent }));
+      const max = Math.max(1, ...rows.map(row => row.spent));
+      return rows.map(row => ({ ...row, percent: Math.max(4, Math.round((row.spent / max) * 100)) }));
     }
 
     function avgProgress() {
