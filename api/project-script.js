@@ -17,10 +17,11 @@ module.exports = async function handler(req, res) {
     if (!accessToken) throw new Error("Sessão inválida. Faça login novamente.");
 
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
-    const projectId = String(body.projectId || "").trim();
+    const entityType = body.entityType === "production" ? "production" : "project";
+    const entityId = String(body.entityId || body.projectId || "").trim();
     const contentType = String(body.contentType || "Vídeo").trim();
     const notes = String(body.notes || "").trim();
-    if (!projectId) throw new Error("Projeto não informado.");
+    if (!entityId) throw new Error(entityType === "production" ? "Produção não informada." : "Projeto não informado.");
 
     await getCurrentUser(supabaseUrl, anonKey, accessToken);
 
@@ -34,13 +35,14 @@ module.exports = async function handler(req, res) {
     if (!record) throw new Error("Workspace não encontrado para este usuário.");
 
     const db = record.data?.db || {};
-    const project = (db.projects || []).find(item => item.id === projectId);
-    if (!project) throw new Error("Projeto não encontrado.");
-    const client = (db.clients || []).find(item => item.id === project.clientId);
+    const collection = entityType === "production" ? (db.productions || []) : (db.projects || []);
+    const entity = collection.find(item => item.id === entityId);
+    if (!entity) throw new Error(entityType === "production" ? "Produção não encontrada." : "Projeto não encontrado.");
+    const client = (db.clients || []).find(item => item.id === entity.clientId);
 
-    const script = await generateScript(geminiKey, { project, client, contentType, notes });
+    const script = await generateScript(geminiKey, { entityType, entity, client, contentType, notes });
 
-    project.roteiros ||= [];
+    entity.roteiros ||= [];
     const roteiro = {
       id: `roteiro_${cryptoRandomId()}`,
       title: script.title,
@@ -48,7 +50,7 @@ module.exports = async function handler(req, res) {
       content: script.content,
       createdAt: new Date().toISOString()
     };
-    project.roteiros.unshift(roteiro);
+    entity.roteiros.unshift(roteiro);
 
     await restFetch(supabaseUrl, anonKey, accessToken, `/nexor_records?id=eq.${record.id}`, {
       method: "PATCH",
@@ -69,13 +71,16 @@ async function getCurrentUser(supabaseUrl, anonKey, accessToken) {
   return response.json();
 }
 
-async function generateScript(geminiKey, { project, client, contentType, notes }) {
+async function generateScript(geminiKey, { entityType, entity, client, contentType, notes }) {
+  const context = entityType === "production"
+    ? `Produção: ${entity.type || contentType}\nDescrição da produção: ${entity.description || "Sem descrição"}`
+    : `Projeto: ${entity.name || "Sem nome"}\nDescrição do projeto: ${entity.description || "Sem descrição"}`;
+
   const systemPrompt = `Você é um roteirista/redator publicitário especialista, trabalhando dentro do Nexor (app de gestão de produção de conteúdo).
 
-Escreva um roteiro/conteúdo do tipo "${contentType}" para o projeto abaixo. Seja específico e pronto pra gravar/publicar — nada de instruções genéricas de "grave um vídeo sobre...". Estruture com cenas/blocos quando fizer sentido pro tipo de conteúdo (ex: vídeo/reels → Gancho, Desenvolvimento, CTA; post estático → Legenda + sugestão visual).
+Escreva um roteiro/conteúdo do tipo "${contentType}" para o ${entityType === "production" ? "item de produção" : "projeto"} abaixo. Seja específico e pronto para gravar ou publicar, nada de instruções genéricas do tipo "grave um vídeo sobre...". Estruture com cenas/blocos quando fizer sentido pro tipo de conteúdo (ex: vídeo/reels: Gancho, Desenvolvimento, CTA; post estático: Legenda e sugestão visual).
 
-Projeto: ${project.name || "Sem nome"}
-Descrição do projeto: ${project.description || "Sem descrição"}
+${context}
 Cliente: ${client?.name || "Não informado"}${client?.company ? ` (${client.company})` : ""}
 Observações do usuário: ${notes || "Nenhuma"}
 
@@ -101,7 +106,7 @@ Responda SOMENTE com um JSON válido, sem texto adicional, no formato:
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
   return {
-    title: parsed.title || `Roteiro — ${contentType}`,
+    title: parsed.title || `Roteiro: ${contentType}`,
     content: parsed.content || "Não foi possível gerar o conteúdo."
   };
 }

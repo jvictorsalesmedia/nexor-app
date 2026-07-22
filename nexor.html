@@ -886,6 +886,28 @@
       margin-top: 6px;
     }
 
+    .roteiro-field {
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+      margin-top: 6px;
+    }
+
+    .roteiro-inline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .roteiro-inline select {
+      flex: 0 0 160px;
+    }
+
+    .roteiro-inline input {
+      flex: 1;
+      min-width: 160px;
+    }
+
     .script-entry {
       border: 1px solid var(--line);
       border-radius: var(--radius);
@@ -4139,8 +4161,7 @@
                 <div class="progress" data-chart-tip="${escapeHtml(project.name)}|${Number(project.progress || 0)}% de progresso" style="--value:${Number(project.progress || 0)}%"><span></span></div>
                 <div class="meta"><span>${project.progress || 0}%</span><span>${taskCount} tarefas</span><span>${money(project.budget)}</span></div>
                 <div class="row-actions">
-                  <button class="btn" type="button" data-edit="project" data-id="${project.id}" data-icon="edit">Editar</button>
-                  <button class="btn" type="button" data-scripts="${project.id}" data-icon="sparkles">Roteiros${project.roteiros?.length ? ` (${project.roteiros.length})` : ""}</button>
+                  <button class="btn" type="button" data-edit="project" data-id="${project.id}" data-icon="edit">Editar${project.roteiros?.length ? ` (${project.roteiros.length} roteiro${project.roteiros.length === 1 ? "" : "s"})` : ""}</button>
                   ${canManage() ? `<button class="btn danger" type="button" data-delete="project" data-id="${project.id}" data-icon="trash">Excluir</button>` : ""}
                 </div>
               </article>
@@ -4152,69 +4173,54 @@
 
     const productionContentTypes = ["Vídeo", "Reels", "Story", "Post estático", "Legenda", "Roteiro de vendas", "E-mail", "Outro"];
 
-    function openProjectScriptsModal(projectId) {
-      const project = db.projects.find(item => item.id === projectId);
-      if (!project) return;
-      project.roteiros ||= [];
-      const modalRoot = $("#modalRoot");
-      modalRoot.innerHTML = `
-        <dialog>
-          <form class="modal" method="dialog" id="projectScriptForm">
-            <div class="modal-head">
-              <div>
-                <h2>Roteiros — ${escapeHtml(project.name)}</h2>
-                <p class="muted">A IA gera com base nos dados do projeto e do cliente vinculado.</p>
-              </div>
-              <button class="btn icon" type="button" data-close-modal title="Fechar">×</button>
-            </div>
-            <div class="form-grid">
-              <div class="field"><label>Tipo de conteúdo</label><select name="contentType">${options(productionContentTypes, "Vídeo")}</select></div>
-              <div class="field wide"><label>Observações (opcional)</label><textarea name="notes" rows="2" placeholder="Ex: foco em promoção de fim de ano, tom descontraído..."></textarea></div>
-            </div>
-            <div class="modal-actions">
-              <span id="projectScriptStatus" class="muted"></span>
-              <button class="btn accent" type="submit" id="projectScriptSubmit" data-icon="sparkles">Gerar roteiro com IA</button>
-            </div>
-            <div id="projectScriptList" class="nex-ai-script-list">${renderProjectScriptsList(project)}</div>
-          </form>
-        </dialog>
+    function roteiroSection(entityType, item) {
+      if (!item.id) {
+        return `
+          <div class="field wide">
+            <label>Roteiro (Nex AI)</label>
+            <p class="muted">Salve primeiro para gerar roteiros com a Nex.</p>
+          </div>
+        `;
+      }
+      const roteiros = item.roteiros || [];
+      return `
+        <div class="field wide roteiro-field">
+          <label>Roteiro (Nex AI)</label>
+          <div class="roteiro-inline">
+            <select id="roteiroType-${item.id}">${options(productionContentTypes, "Vídeo")}</select>
+            <input id="roteiroNotes-${item.id}" type="text" placeholder="Observações (opcional)">
+            <button class="btn accent" type="button" data-generate-roteiro="${entityType}:${item.id}" data-icon="sparkles">Gerar roteiro com a Nex</button>
+          </div>
+          <span id="roteiroStatus-${item.id}" class="muted"></span>
+          <div id="roteiroList-${item.id}" class="nex-ai-script-list">${renderRoteiroEntries(roteiros, item.id)}</div>
+        </div>
       `;
-      applyIcons(modalRoot);
-      const dialog = $("dialog", modalRoot);
-      if (dialog.showModal) dialog.showModal();
-      $$("[data-close-modal]", modalRoot).forEach(button => button.addEventListener("click", closeModal));
-      $("#projectScriptForm").addEventListener("submit", event => submitProjectScript(event, projectId));
-      $$("[data-copy-script]", modalRoot).forEach(button => button.addEventListener("click", () => {
-        const roteiro = project.roteiros.find(item => item.id === button.dataset.copyScript);
-        if (!roteiro) return;
-        navigator.clipboard?.writeText(roteiro.content).then(
-          () => toast("Roteiro copiado.", "success"),
-          () => toast("Não foi possível copiar.", "error")
-        );
-      }));
     }
 
-    function renderProjectScriptsList(project) {
-      if (!project.roteiros.length) {
+    function renderRoteiroEntries(roteiros, itemId) {
+      if (!roteiros.length) {
         return `<div class="nex-ai-empty muted">Nenhum roteiro gerado ainda.</div>`;
       }
-      return project.roteiros.map(item => `
+      return roteiros.map(item => `
         <div class="script-entry">
           <div class="section-title">
             <div><strong>${escapeHtml(item.title)}</strong><div class="meta">${escapeHtml(item.contentType)} • ${dateText(String(item.createdAt).slice(0, 10))}</div></div>
-            <button class="btn icon" type="button" data-copy-script="${item.id}" title="Copiar">${icon("file-text")}</button>
+            <button class="btn icon" type="button" data-copy-script="${itemId}:${item.id}" title="Copiar">${icon("file-text")}</button>
           </div>
           <p class="script-content">${escapeHtml(item.content)}</p>
         </div>
       `).join("");
     }
 
-    async function submitProjectScript(event, projectId) {
-      event.preventDefault();
-      const formData = new FormData(event.currentTarget);
-      const submitBtn = $("#projectScriptSubmit");
-      const statusEl = $("#projectScriptStatus");
-      submitBtn.disabled = true;
+    async function handleGenerateRoteiro(entityType, entityId) {
+      const collection = entityType === "production" ? db.productions : db.projects;
+      const item = collection.find(entry => entry.id === entityId);
+      if (!item) return;
+      const button = $(`[data-generate-roteiro="${entityType}:${entityId}"]`);
+      const statusEl = $(`#roteiroStatus-${entityId}`);
+      const contentType = $(`#roteiroType-${entityId}`).value;
+      const notes = $(`#roteiroNotes-${entityId}`).value;
+      button.disabled = true;
       statusEl.textContent = "Gerando roteiro...";
       try {
         const response = await fetch("/api/project-script", {
@@ -4223,24 +4229,35 @@
             "Content-Type": "application/json",
             Authorization: `Bearer ${cloudSession?.access_token || ""}`
           },
-          body: JSON.stringify({
-            projectId,
-            contentType: formData.get("contentType"),
-            notes: formData.get("notes")
-          })
+          body: JSON.stringify({ entityType, entityId, contentType, notes })
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || "Não foi possível gerar o roteiro.");
-        await loadCloudDb();
+        item.roteiros ||= [];
+        item.roteiros.unshift(result.roteiro);
+        saveDb();
         statusEl.textContent = "";
-        submitBtn.disabled = false;
-        openProjectScriptsModal(projectId);
+        button.disabled = false;
+        $(`#roteiroList-${entityId}`).innerHTML = renderRoteiroEntries(item.roteiros, entityId);
+        wireRoteiroCopyButtons(item);
         toast(`Roteiro gerado: ${result.roteiro.title}`, "success");
       } catch (error) {
         console.error(error);
         statusEl.textContent = error.message || "Não foi possível gerar o roteiro.";
-        submitBtn.disabled = false;
+        button.disabled = false;
       }
+    }
+
+    function wireRoteiroCopyButtons(item) {
+      $$(`[data-copy-script^="${item.id}:"]`).forEach(button => button.addEventListener("click", () => {
+        const roteiroId = button.dataset.copyScript.split(":")[1];
+        const roteiro = (item.roteiros || []).find(entry => entry.id === roteiroId);
+        if (!roteiro) return;
+        navigator.clipboard?.writeText(roteiro.content).then(
+          () => toast("Roteiro copiado.", "success"),
+          () => toast("Não foi possível copiar.", "error")
+        );
+      }));
     }
 
     function renderKanban() {
@@ -5267,7 +5284,6 @@
       $("#taskStatusFilter")?.addEventListener("change", renderModule);
       $$("[data-edit]").forEach(button => button.addEventListener("click", () => openModal(button.dataset.edit, button.dataset.id)));
       $$("[data-delete]").forEach(button => button.addEventListener("click", () => deleteEntity(button.dataset.delete, button.dataset.id)));
-      $$("[data-scripts]").forEach(button => button.addEventListener("click", () => openProjectScriptsModal(button.dataset.scripts)));
       $$("[data-complete-task]").forEach(button => button.addEventListener("click", () => completeTask(button.dataset.completeTask)));
       $$("[data-toggle-habit]").forEach(button => button.addEventListener("click", () => toggleHabit(button.dataset.toggleHabit)));
       $$("[data-habit-day]").forEach(button => button.addEventListener("click", () => toggleHabitDay(button.dataset.habitDay)));
@@ -5469,6 +5485,11 @@
         event.preventDefault();
         saveEntity(entity, id, new FormData(event.currentTarget));
       });
+      $$("[data-generate-roteiro]", modalRoot).forEach(button => button.addEventListener("click", () => {
+        const [entityType, entityId] = button.dataset.generateRoteiro.split(":");
+        handleGenerateRoteiro(entityType, entityId);
+      }));
+      if (existing) wireRoteiroCopyButtons(existing);
     }
 
     function openTaskStatusModal(id) {
@@ -5915,6 +5936,7 @@
         ${field("Orçamento", "budget", item.budget || 0, "number")}
         ${field("Arquivos / links", "files", item.files, "url")}
         ${area("Descrição", "description", item.description, "wide")}
+        ${roteiroSection("project", item)}
       `;
     }
 
@@ -5976,6 +5998,7 @@
         ${area("Descrição", "description", item.description, "wide")}
         ${area("Checklist de produção", "checklist", item.checklist?.join("\\n"), "wide")}
         ${area("Observações", "notes", item.notes, "wide")}
+        ${roteiroSection("production", item)}
       `;
     }
 
@@ -6056,7 +6079,7 @@
         lead: () => ({ name: data.name, business: data.business, contact: data.contact, email: data.email, whatsapp: data.whatsapp, source: data.source, value: Number(data.value || 0), stage: data.stage || "Novo", owner: data.owner, nextAction: data.nextAction, nextDate: data.nextDate, notes: data.notes, createdAt: existing?.createdAt || today() }),
         client: () => ({ name: data.name, company: data.company, phone: data.phone, whatsapp: data.whatsapp, email: data.email, address: data.address, notes: data.notes }),
         finance: () => ({ title: data.title, type: data.type, category: data.category, value: Number(data.value || 0), date: data.date, clientId: data.clientId, projectId: data.projectId, status: data.status, notes: data.notes, attachmentName: file || existing?.attachmentName || "" }),
-        production: () => ({ type: data.type, clientId: data.clientId, description: data.description, responsible: data.responsible, captureDate: data.captureDate, editDate: data.editDate, deliveryDate: data.deliveryDate, status: data.status, fileLink: data.fileLink, approval: data.approval, notes: data.notes, checklist: splitLines(data.checklist) }),
+        production: () => ({ type: data.type, clientId: data.clientId, description: data.description, responsible: data.responsible, captureDate: data.captureDate, editDate: data.editDate, deliveryDate: data.deliveryDate, status: data.status, fileLink: data.fileLink, approval: data.approval, notes: data.notes, checklist: splitLines(data.checklist), roteiros: existing?.roteiros || [] }),
         habit: () => ({ name: data.name, frequency: data.frequency, days: splitList(data.days), target: Number(data.target || 0), streak: Number(data.streak || 0), bestStreak: Number(data.bestStreak || 0), doneToday: existing?.doneToday || false, history: existing?.history || [] }),
         employee: () => ({ name: data.name, roleName: data.roleName, salary: Number(data.salary || 0), absenceCount: Number(data.absenceCount || 0), absenceReason: data.absenceReason, certificateName: certificate || existing?.certificateName || "", advance: Number(data.advance || 0), paymentProof: paymentProof || existing?.paymentProof || "", notes: data.notes })
       };
