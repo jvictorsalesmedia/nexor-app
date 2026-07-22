@@ -779,18 +779,111 @@
       flex: 0 0 auto;
     }
 
-    .nex-ai-modal {
-      width: min(560px, 92vw);
+    .nex-ai-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100vh;
+      width: min(420px, 94vw);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, white 2%), var(--surface));
+      border-left: 1px solid var(--line);
+      box-shadow: -24px 0 64px rgba(0,0,0,0.5);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+      gap: 12px;
+      transform: translateX(100%);
+      transition: transform 240ms ease;
+    }
+
+    .nex-ai-drawer.open {
+      transform: translateX(0);
+    }
+
+    .nex-ai-drawer.hidden {
+      display: none;
+    }
+
+    .nex-ai-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nex-ai-head h2 {
+      margin: 0;
+      font-size: 1rem;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .nex-ai-new {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .nex-ai-conversation-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nex-ai-conversation-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 150ms ease;
+    }
+
+    .nex-ai-conversation-row:hover,
+    .nex-ai-conversation-row.active {
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+    }
+
+    .nex-ai-conversation-row strong {
+      display: block;
+      font-size: 0.88rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 260px;
+    }
+
+    .nex-ai-conversation-row .meta {
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
+    .nex-ai-composer {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .nex-ai-composer textarea {
+      flex: 1;
     }
 
     .nex-ai-thread {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-height: 340px;
+      flex: 1;
       overflow-y: auto;
       padding: 4px 2px;
-      margin: 10px 0;
     }
 
     .nex-ai-empty {
@@ -2070,6 +2163,19 @@
       display: none;
     }
 
+    .app-tabs.sidebar-tabs-colorful {
+      grid-template-columns: 1fr;
+      width: 100%;
+      margin: 0 0 14px;
+      gap: 6px;
+    }
+
+    .app-tabs.sidebar-tabs-colorful button {
+      justify-content: flex-start;
+      min-height: 42px;
+      font-size: 0.8rem;
+    }
+
     .app-tabs button {
       --tab-accent: #f4f4f0;
       min-height: 44px;
@@ -2463,6 +2569,7 @@
   <button id="nexAiFab" class="nex-ai-fab hidden" type="button" title="Nex AI — converse, crie e peça relatórios">
     <img src="/nex-ai-badge.svg" alt="Nex AI" />
   </button>
+  <div id="nexAiDrawer" class="nex-ai-drawer hidden"></div>
   <div id="modalRoot"></div>
   <div id="toastStack" class="toast-stack" aria-live="polite"></div>
 
@@ -2555,7 +2662,8 @@
       "file-text": '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M16 13H8"></path><path d="M16 17H8"></path><path d="M10 9H8"></path>',
       "target": '<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.6"></circle><path d="M12 3v3"></path><path d="M21 12h-3"></path><path d="M12 21v-3"></path><path d="M3 12h3"></path>',
       "chevron-down": '<path d="m6 9 6 6 6-6"></path>',
-      "sparkles": '<path d="M12 3v4"></path><path d="M12 17v4"></path><path d="M3 12h4"></path><path d="M17 12h4"></path><path d="m5.6 5.6 2.8 2.8"></path><path d="m15.6 15.6 2.8 2.8"></path><path d="m18.4 5.6-2.8 2.8"></path><path d="m8.4 15.6-2.8 2.8"></path>'
+      "sparkles": '<path d="M12 3v4"></path><path d="M12 17v4"></path><path d="M3 12h4"></path><path d="M17 12h4"></path><path d="m5.6 5.6 2.8 2.8"></path><path d="m15.6 15.6 2.8 2.8"></path><path d="m18.4 5.6-2.8 2.8"></path><path d="m8.4 15.6-2.8 2.8"></path>',
+      "history": '<path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 5v5h5"></path><path d="M12 7v5l3 3"></path>'
     };
 
     let users = [];
@@ -2565,6 +2673,7 @@
     let db = null;
     let activeModule = "dashboard";
     let expandedNavGroup = null;
+    let nexAiDrawerView = "chat";
     let accessNotice = "";
     let clientRoute = { active: false, slug: "" };
     let cloudConfig = { url: "", anonKey: "" };
@@ -3157,7 +3266,8 @@
       db.team ||= [];
       db.activity ||= [];
       db.calendar ||= { googleClientId: "", connected: false, lastSync: "" };
-      db.nexAiHistory ||= [];
+      db.uiPreferences ||= { navStyle: "minimal" };
+      ensureNexAiConversations();
       if (db.brandVersion !== "nexor-motion-v2") {
         db.theme = "dark";
         db.brandVersion = "nexor-motion-v2";
@@ -3251,7 +3361,8 @@
       db.team ||= [];
       db.activity ||= [];
       db.calendar ||= { googleClientId: "", connected: false, lastSync: "" };
-      db.nexAiHistory ||= [];
+      db.uiPreferences ||= { navStyle: "minimal" };
+      ensureNexAiConversations();
       db.theme ||= "dark";
       db.brandVersion ||= "nexor-motion-v2";
     }
@@ -3652,11 +3763,24 @@
 
     function renderNav() {
       const byId = Object.fromEntries(modules.map(item => [item[0], item]));
+      const colorful = db.uiPreferences?.navStyle === "colorful";
       if (expandedNavGroup === null) expandedNavGroup = activeNavGroupLabel();
       $("#nav").innerHTML = moduleGroups
         .map(([groupLabel, ids]) => {
           const items = ids.filter(id => canAccess(id));
           if (!items.length) return "";
+          const itemButtons = items.map(id => {
+            const [moduleId, label, iconName] = byId[id];
+            return `<button type="button" class="${activeModule === moduleId ? "active" : ""}" data-module="${moduleId}">${icon(iconName)}<span>${label}</span></button>`;
+          }).join("");
+          if (colorful) {
+            return `
+              <div class="nav-group open">
+                <span class="nav-group-label">${groupLabel}</span>
+                <div class="app-tabs sidebar-tabs-colorful">${itemButtons}</div>
+              </div>
+            `;
+          }
           const isOpen = expandedNavGroup === groupLabel;
           return `
             <div class="nav-group ${isOpen ? "open" : ""}">
@@ -3664,12 +3788,7 @@
                 <span>${groupLabel}</span>
                 ${icon("chevron-down")}
               </button>
-              <div class="nav-group-items">
-                ${items.map(id => {
-                  const [moduleId, label, iconName] = byId[id];
-                  return `<button type="button" class="${activeModule === moduleId ? "active" : ""}" data-module="${moduleId}">${icon(iconName)}<span>${label}</span></button>`;
-                }).join("")}
-              </div>
+              <div class="nav-group-items">${itemButtons}</div>
             </div>
           `;
         })
@@ -3679,7 +3798,7 @@
         expandedNavGroup = expandedNavGroup === group ? "" : group;
         renderNav();
       }));
-      $$(".nav-group-items button").forEach(button => button.addEventListener("click", () => {
+      $$(".nav-group-items button, .sidebar-tabs-colorful button").forEach(button => button.addEventListener("click", () => {
         activeModule = button.dataset.module;
         $("#globalSearch").value = "";
         $("#searchResults").classList.add("hidden");
@@ -4651,6 +4770,16 @@
                   <button class="btn ${document.body.dataset.theme === "light" ? "primary" : ""}" type="button" data-set-theme="light" data-icon="sun">Claro</button>
                 </div>
               </div>
+              <div class="list-row">
+                <div>
+                  <strong>Menu lateral</strong>
+                  <div class="meta">Estilo minimalista ou colorido por módulo.</div>
+                </div>
+                <div class="row-actions">
+                  <button class="btn ${(db.uiPreferences?.navStyle || "minimal") === "minimal" ? "primary" : ""}" type="button" data-set-nav-style="minimal">Minimalista</button>
+                  <button class="btn ${db.uiPreferences?.navStyle === "colorful" ? "primary" : ""}" type="button" data-set-nav-style="colorful">Colorido</button>
+                </div>
+              </div>
               <form id="calendarSettingsForm" class="field">
                 <label>Google OAuth Client ID</label>
                 <input name="googleClientId" value="${escapeHtml(db.calendar?.googleClientId || "")}" placeholder="Cole o Client ID do Google Cloud">
@@ -5026,6 +5155,11 @@
       $$("[data-export]").forEach(button => button.addEventListener("click", () => handleExport(button.dataset.export)));
       $$("[data-toggle-theme-inline]").forEach(button => button.addEventListener("click", toggleTheme));
       $$("[data-set-theme]").forEach(button => button.addEventListener("click", () => setTheme(button.dataset.setTheme)));
+      $$("[data-set-nav-style]").forEach(button => button.addEventListener("click", () => {
+        db.uiPreferences = { ...db.uiPreferences, navStyle: button.dataset.setNavStyle };
+        saveDb();
+        renderApp();
+      }));
       $$("[data-calendar-connect]").forEach(button => button.addEventListener("click", connectGoogleCalendar));
       $$("[data-open-google-calendar]").forEach(button => button.addEventListener("click", openGoogleCalendar));
       $$("[data-module]").forEach(button => button.addEventListener("click", () => {
@@ -5298,49 +5432,148 @@
       }, 4200);
     }
 
+    function ensureNexAiConversations() {
+      db.nexAiConversations ||= [];
+      // Migra o antigo histórico único (nexAiHistory) pra uma conversa, uma vez.
+      if (db.nexAiHistory?.length && !db.nexAiConversations.length) {
+        db.nexAiConversations.push({
+          id: uid("nexai"),
+          title: db.nexAiHistory.find(item => item.role === "user")?.content?.slice(0, 48) || "Conversa",
+          messages: db.nexAiHistory,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+      delete db.nexAiHistory;
+      db.nexAiActiveId ||= db.nexAiConversations[0]?.id || "";
+    }
+
+    function activeNexAiConversation() {
+      ensureNexAiConversations();
+      let conversation = db.nexAiConversations.find(item => item.id === db.nexAiActiveId);
+      if (!conversation) {
+        conversation = createNexAiConversationObject();
+        db.nexAiConversations.unshift(conversation);
+        db.nexAiActiveId = conversation.id;
+      }
+      return conversation;
+    }
+
+    function createNexAiConversationObject() {
+      return {
+        id: uid("nexai"),
+        title: "Nova conversa",
+        messages: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    }
+
     function openNexAiModal() {
       if (!cloudEnabled()) {
         toast("Nex AI precisa do Nexor Cloud ativo.", "error");
         return;
       }
-      db.nexAiHistory ||= [];
-      const modalRoot = $("#modalRoot");
-      modalRoot.innerHTML = `
-        <dialog>
-          <form class="modal nex-ai-modal" method="dialog" id="nexAiForm">
-            <div class="modal-head">
-              <div>
-                <h2>Nex AI</h2>
-                <p class="muted">Crie tarefas, hábitos, leads e lançamentos, pergunte sobre seus dados, peça um relatório em PDF, ou converse e peça conselho sobre qualquer assunto.</p>
-              </div>
-              <button class="btn icon" type="button" data-close-modal title="Fechar">×</button>
-            </div>
-            <div id="nexAiThread" class="nex-ai-thread">${renderNexAiThread()}</div>
-            <div class="form-grid">
-              <div class="field wide">
-                <textarea id="nexAiMessage" name="message" rows="2" placeholder="Ex: reunião com cliente X sexta 15h / quanto vou receber essa semana? / emitir relatório do mês passado / como melhorar meu marketing?" required></textarea>
-              </div>
-            </div>
-            <div class="modal-actions">
-              <button class="btn" type="button" data-close-modal>Fechar</button>
-              <button class="btn accent" type="submit" id="nexAiSubmit" data-icon="sparkles">Enviar</button>
-            </div>
-          </form>
-        </dialog>
+      ensureNexAiConversations();
+      nexAiDrawerView = "chat";
+      const drawer = $("#nexAiDrawer");
+      drawer.classList.remove("hidden");
+      requestAnimationFrame(() => drawer.classList.add("open"));
+      renderNexAiDrawer();
+    }
+
+    function closeNexAiDrawer() {
+      const drawer = $("#nexAiDrawer");
+      drawer.classList.remove("open");
+      setTimeout(() => drawer.classList.add("hidden"), 220);
+    }
+
+    function renderNexAiDrawer() {
+      const drawer = $("#nexAiDrawer");
+      if (nexAiDrawerView === "list") {
+        drawer.innerHTML = `
+          <div class="nex-ai-head">
+            <h2>Conversas</h2>
+            <button class="btn icon" type="button" id="nexAiCloseBtn" title="Fechar">${icon("x")}</button>
+          </div>
+          <button class="btn accent nex-ai-new" type="button" id="nexAiNewBtn">${icon("plus")}<span>Nova conversa</span></button>
+          <div class="nex-ai-conversation-list">${renderNexAiConversationList()}</div>
+        `;
+        $("#nexAiCloseBtn").addEventListener("click", closeNexAiDrawer);
+        $("#nexAiNewBtn").addEventListener("click", () => {
+          const conversation = createNexAiConversationObject();
+          db.nexAiConversations.unshift(conversation);
+          db.nexAiActiveId = conversation.id;
+          saveDb();
+          nexAiDrawerView = "chat";
+          renderNexAiDrawer();
+        });
+        $$(".nex-ai-conversation-row", drawer).forEach(row => {
+          row.addEventListener("click", event => {
+            if (event.target.closest("[data-delete-conversation]")) return;
+            db.nexAiActiveId = row.dataset.id;
+            nexAiDrawerView = "chat";
+            renderNexAiDrawer();
+          });
+        });
+        $$("[data-delete-conversation]", drawer).forEach(button => {
+          button.addEventListener("click", event => {
+            event.stopPropagation();
+            const id = button.dataset.deleteConversation;
+            db.nexAiConversations = db.nexAiConversations.filter(item => item.id !== id);
+            if (db.nexAiActiveId === id) db.nexAiActiveId = db.nexAiConversations[0]?.id || "";
+            saveDb();
+            renderNexAiDrawer();
+          });
+        });
+        return;
+      }
+
+      const conversation = activeNexAiConversation();
+      drawer.innerHTML = `
+        <div class="nex-ai-head">
+          <button class="btn icon" type="button" id="nexAiHistoryBtn" title="Conversas">${icon("history")}</button>
+          <h2>${escapeHtml(conversation.title || "Nex AI")}</h2>
+          <button class="btn icon" type="button" id="nexAiCloseBtn" title="Fechar">${icon("x")}</button>
+        </div>
+        <div id="nexAiThread" class="nex-ai-thread">${renderNexAiThread(conversation)}</div>
+        <form class="nex-ai-composer" id="nexAiForm">
+          <textarea id="nexAiMessage" rows="2" placeholder="Ex: reunião com cliente X sexta 15h / quanto vou receber essa semana? / emitir relatório do mês passado / como melhorar meu marketing?" required></textarea>
+          <button class="btn icon accent" type="submit" id="nexAiSubmit" title="Enviar">${icon("check")}</button>
+        </form>
       `;
-      applyIcons(modalRoot);
-      const dialog = $("dialog", modalRoot);
-      if (dialog.showModal) dialog.showModal();
-      $$("[data-close-modal]", modalRoot).forEach(button => button.addEventListener("click", closeModal));
+      $("#nexAiCloseBtn").addEventListener("click", closeNexAiDrawer);
+      $("#nexAiHistoryBtn").addEventListener("click", () => {
+        nexAiDrawerView = "list";
+        renderNexAiDrawer();
+      });
       $("#nexAiForm").addEventListener("submit", submitNexAiMessage);
       scrollNexAiThreadToBottom();
     }
 
-    function renderNexAiThread() {
-      if (!db.nexAiHistory.length) {
-        return `<div class="nex-ai-empty muted">Nenhuma conversa ainda. Pergunte algo, peça um relatório ou descreva o que quer criar.</div>`;
+    function renderNexAiConversationList() {
+      if (!db.nexAiConversations.length) {
+        return `<div class="nex-ai-empty muted">Nenhuma conversa ainda.</div>`;
       }
-      return db.nexAiHistory.map(item => `
+      return db.nexAiConversations
+        .slice()
+        .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
+        .map(item => `
+          <div class="nex-ai-conversation-row ${item.id === db.nexAiActiveId ? "active" : ""}" data-id="${item.id}">
+            <div>
+              <strong>${escapeHtml(item.title || "Conversa")}</strong>
+              <span class="meta">${dateText(String(item.updatedAt || "").slice(0, 10))}</span>
+            </div>
+            <button class="btn icon" type="button" data-delete-conversation="${item.id}" title="Excluir">${icon("trash")}</button>
+          </div>
+        `).join("");
+    }
+
+    function renderNexAiThread(conversation) {
+      if (!conversation.messages.length) {
+        return `<div class="nex-ai-empty muted">Pergunte algo, peça um relatório ou descreva o que quer criar.</div>`;
+      }
+      return conversation.messages.map(item => `
         <div class="nex-ai-msg ${item.role}">
           <div class="nex-ai-bubble">${escapeHtml(item.content)}</div>
         </div>
@@ -5353,13 +5586,20 @@
     }
 
     function pushNexAiMessage(role, content) {
-      db.nexAiHistory.push({ role, content, at: new Date().toISOString() });
-      db.nexAiHistory = db.nexAiHistory.slice(-60);
+      const conversation = activeNexAiConversation();
+      conversation.messages.push({ role, content, at: new Date().toISOString() });
+      conversation.messages = conversation.messages.slice(-60);
+      conversation.updatedAt = new Date().toISOString();
+      if (conversation.title === "Nova conversa" && role === "user") {
+        conversation.title = content.slice(0, 48);
+      }
       saveDb();
       const thread = $("#nexAiThread");
       if (!thread) return;
-      thread.innerHTML = renderNexAiThread();
+      thread.innerHTML = renderNexAiThread(conversation);
       scrollNexAiThreadToBottom();
+      const headTitle = $(".nex-ai-head h2");
+      if (headTitle) headTitle.textContent = conversation.title || "Nex AI";
       if (role === "assistant") {
         const bubbles = $$(".nex-ai-bubble", thread);
         const lastBubble = bubbles[bubbles.length - 1];
@@ -5391,13 +5631,14 @@
       submitBtn.disabled = true;
       messageInput.value = "";
 
+      const conversation = activeNexAiConversation();
       // Mostra a mensagem do usuário e um "pensando..." só na tela, sem
       // persistir ainda — evita gravar duas vezes em sequência rápida e
       // colidir com a gravação que o servidor faz ao criar um registro.
-      const history = db.nexAiHistory.slice(-12).map(item => ({ role: item.role, content: item.content }));
+      const history = conversation.messages.slice(-12).map(item => ({ role: item.role, content: item.content }));
       const thread = $("#nexAiThread");
       if (thread) {
-        thread.innerHTML = renderNexAiThread() + `
+        thread.innerHTML = renderNexAiThread(conversation) + `
           <div class="nex-ai-msg user"><div class="nex-ai-bubble">${escapeHtml(message)}</div></div>
           <div class="nex-ai-msg assistant"><div class="nex-ai-bubble">Pensando...</div></div>
         `;
