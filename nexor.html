@@ -1298,6 +1298,44 @@
       grid-column: 1 / -1;
     }
 
+    .plan-picker {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .plan-option {
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: border-color 150ms ease, background 150ms ease;
+    }
+
+    .plan-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .plan-option:has(input:checked) {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+    }
+
+    .plan-option strong {
+      display: block;
+      font-size: 0.9rem;
+    }
+
+    .plan-option span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
     dialog {
       width: min(760px, calc(100vw - 28px));
       border: 1px solid var(--line);
@@ -2940,6 +2978,7 @@
       const clientRows = await cloudFetch(`/rest/v1/nexor_clients?auth_user_id=eq.${encodeURIComponent(user.id)}&select=*&limit=1`);
       if (clientRows?.[0]) {
         user.clientAccount = cloudClientToAccount(clientRows[0]);
+        user.plan = user.clientAccount.plan;
       }
       return user;
     }
@@ -2975,6 +3014,7 @@
         email: client.email || "",
         whatsapp: client.whatsapp || "",
         accessUsername: client.access_username || "",
+        plan: ["basico", "premium", "pro"].includes(client.plan) ? client.plan : "basico",
         monthlyValue: Number(client.monthly_value || 0),
         subscriptionStatus: client.subscription_status || "pendente",
         paymentDueDate: client.payment_due_date || "",
@@ -3418,10 +3458,13 @@
       db.activity = db.activity.slice(0, 60);
     }
 
+    const planModules = { basico: new Set(["dashboard", "tasks", "kanban", "planner", "eisenhower", "habits", "clients", "finance", "accounts", "team", "reports", "settings"]) };
+
     function canAccess(moduleId) {
       if (!currentUser) return false;
       if (moduleId === "accounts") return isAdmin();
       if (currentUser.role === "colaborador") return collaboratorModules.has(moduleId);
+      if (currentUser.role === "cliente" && currentUser.plan === "basico") return planModules.basico.has(moduleId);
       return true;
     }
 
@@ -3539,10 +3582,18 @@
                 <label>Foto do responsável</label>
                 <input name="photo" type="file" accept="image/png,image/jpeg,image/webp" required>
               </div>
+              <div class="field wide">
+                <label>Plano</label>
+                <div class="plan-picker">
+                  <label class="plan-option"><input type="radio" name="plan" value="basico" checked><div><strong>Básico</strong><span>R$ 30/mês</span></div></label>
+                  <label class="plan-option"><input type="radio" name="plan" value="premium"><div><strong>Premium</strong><span>R$ 50/mês</span></div></label>
+                  <label class="plan-option"><input type="radio" name="plan" value="pro"><div><strong>Pro</strong><span>R$ 75/mês</span></div></label>
+                </div>
+              </div>
             </div>
             <div class="modal-actions">
               <button class="btn" type="button" data-close-modal>Cancelar</button>
-              <button class="btn accent" type="submit" data-icon="check">Enviar pré-cadastro</button>
+              <button class="btn accent" type="submit" data-icon="check">Continuar para pagamento</button>
             </div>
           </form>
         </dialog>
@@ -3564,6 +3615,10 @@
         toast("Envie uma foto do responsável.", "error");
         return;
       }
+      if (!String(formData.get("document") || "").trim()) {
+        toast("Informe o CPF ou CNPJ (necessário para gerar a cobrança).", "error");
+        return;
+      }
       submit.disabled = true;
       submit.textContent = "Enviando...";
       try {
@@ -3574,6 +3629,7 @@
           email: String(formData.get("email") || "").trim().toLowerCase(),
           whatsapp: String(formData.get("whatsapp") || "").trim(),
           accessUsername: String(formData.get("accessUsername") || "").trim().toLowerCase(),
+          plan: String(formData.get("plan") || "basico"),
           photoDataUrl: await imageFileToDataUrl(photo)
         };
         const response = await fetch("/api/signup-request", {
@@ -3583,8 +3639,19 @@
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || "Não foi possível enviar o pré-cadastro.");
-        closeModal();
-        $("#authError").textContent = "Pré-cadastro enviado. Aguarde a aprovação do administrador.";
+
+        submit.textContent = "Gerando cobrança...";
+        const subscriptionResponse = await fetch("/api/create-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ requestId: result.request.id })
+        });
+        const subscriptionResult = await subscriptionResponse.json().catch(() => ({}));
+        if (!subscriptionResponse.ok || !subscriptionResult.invoiceUrl) {
+          throw new Error(subscriptionResult.error || "Pré-cadastro enviado, mas não foi possível gerar a cobrança. Entraremos em contato.");
+        }
+        window.location.href = subscriptionResult.invoiceUrl;
+        return;
       } catch (error) {
         toast(error.message || "Não foi possível enviar o pré-cadastro.", "error");
       } finally {
@@ -3769,9 +3836,20 @@
       document.body.dataset.theme = db.theme || "light";
       $("#authView").classList.add("hidden");
       $("#appShell").classList.remove("hidden");
-      $("#nexAiFab").classList.toggle("hidden", !cloudEnabled());
+      $("#nexAiFab").classList.toggle("hidden", !cloudEnabled() || !planAllows("nexAiWeb"));
       activeModule = canAccess(activeModule) ? activeModule : "dashboard";
       renderApp();
+    }
+
+    // Recursos que nao sao um modulo inteiro da sidebar (canAccess), mas ainda
+    // assim variam por plano: Nex AI no site (Premium+), Nex AI no WhatsApp,
+    // roteiros por IA e lembrete de pagamento (Pro).
+    function planAllows(feature) {
+      if (!currentUser || currentUser.role !== "cliente") return true;
+      const plan = currentUser.plan || "basico";
+      if (feature === "nexAiWeb") return plan !== "basico";
+      if (feature === "nexAiWhatsapp" || feature === "roteiro" || feature === "paymentReminder") return plan === "pro";
+      return true;
     }
 
     function logout() {
@@ -4174,6 +4252,14 @@
     const productionContentTypes = ["Vídeo", "Reels", "Story", "Post estático", "Legenda", "Roteiro de vendas", "E-mail", "Outro"];
 
     function roteiroSection(entityType, item) {
+      if (!planAllows("roteiro")) {
+        return `
+          <div class="field wide">
+            <label>Roteiro (Nex AI)</label>
+            <p class="muted">Disponível no plano Pro.</p>
+          </div>
+        `;
+      }
       if (!item.id) {
         return `
           <div class="field wide">
@@ -4920,13 +5006,15 @@
                 <input name="googleClientId" value="${escapeHtml(db.calendar?.googleClientId || "")}" placeholder="Cole o Client ID do Google Cloud">
                 <button class="btn" type="submit" data-icon="check">Salvar calendário</button>
               </form>
-              ${cloudEnabled() ? `
+              ${cloudEnabled() && planAllows("nexAiWhatsapp") ? `
               <form id="whatsappSettingsForm" class="field">
                 <label>Nex AI no WhatsApp</label>
                 <input name="whatsappPhone" value="${escapeHtml(db.whatsappPhone || "")}" placeholder="Seu WhatsApp com DDD, ex: 22999998888">
                 <div class="meta">Vincule seu número pra criar tarefas, leads, financeiro e conversar com a Nex AI direto pelo WhatsApp.</div>
                 <button class="btn" type="submit" data-icon="check">Salvar WhatsApp</button>
               </form>
+              ` : cloudEnabled() ? `
+              <div class="field"><label>Nex AI no WhatsApp</label><p class="muted">Disponível no plano Pro.</p></div>
               ` : ""}
               <div class="list-row"><strong>Backup</strong><button class="btn" type="button" data-export="backup" data-icon="download">Exportar</button></div>
             </div>
@@ -5939,7 +6027,7 @@
         <div class="field"><label>Cliente</label><select name="clientId">${clientOptions(item.clientId)}</select></div>
         ${field("Data de início", "startDate", item.startDate, "date")}
         ${field("Prazo final", "dueDate", item.dueDate, "date")}
-        ${field("Data limite de pagamento", "paymentDueDate", item.paymentDueDate, "date")}
+        ${planAllows("paymentReminder") ? field("Data limite de pagamento", "paymentDueDate", item.paymentDueDate, "date") : ""}
         <div class="field"><label>Status</label><select name="status">${options(projectStatus, item.status || "Planejamento")}</select></div>
         ${field("Responsável", "owner", item.owner || currentUser.name)}
         ${field("Progresso (%)", "progress", item.progress || 0, "number")}
@@ -6002,7 +6090,7 @@
         ${field("Data de captação", "captureDate", item.captureDate, "date")}
         ${field("Data de edição", "editDate", item.editDate, "date")}
         ${field("Data de entrega", "deliveryDate", item.deliveryDate, "date")}
-        ${field("Data limite de pagamento", "paymentDueDate", item.paymentDueDate, "date")}
+        ${planAllows("paymentReminder") ? field("Data limite de pagamento", "paymentDueDate", item.paymentDueDate, "date") : ""}
         <div class="field"><label>Status</label><select name="status">${options(["A fazer", "Em produção", "Revisão", "Aguardando aprovação", "Concluído"], item.status || "A fazer")}</select></div>
         ${field("Link do arquivo", "fileLink", item.fileLink, "url")}
         <div class="field"><label>Aprovação do cliente</label><select name="approval">${options(["Pendente", "Aprovado", "Ajustes solicitados"], item.approval || "Pendente")}</select></div>

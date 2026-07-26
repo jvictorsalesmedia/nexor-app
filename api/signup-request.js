@@ -39,6 +39,7 @@ module.exports = async function handler(req, res) {
         whatsapp: payload.whatsapp,
         access_username: payload.accessUsername,
         responsible_photo_data_url: payload.photoDataUrl,
+        plan: payload.plan,
         status: "pendente"
       }
     });
@@ -55,6 +56,7 @@ function normalizeSignupRequest(body) {
   const email = String(body.email || "").trim().toLowerCase();
   const businessName = String(body.businessName || "").trim();
   const accessUsername = String(body.accessUsername || email.split("@")[0] || "").trim().toLowerCase();
+  const plan = ["basico", "premium", "pro"].includes(body.plan) ? body.plan : "basico";
   return {
     businessName,
     responsibleName: String(body.responsibleName || "").trim(),
@@ -62,6 +64,7 @@ function normalizeSignupRequest(body) {
     email,
     whatsapp: String(body.whatsapp || "").trim(),
     accessUsername,
+    plan,
     photoDataUrl: String(body.photoDataUrl || "")
   };
 }
@@ -72,6 +75,9 @@ function validateSignupRequest(payload) {
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
     throw new Error("Informe um e-mail valido.");
+  }
+  if (!payload.document) {
+    throw new Error("Informe o CPF ou CNPJ (necessario para gerar a cobranca).");
   }
   if (!payload.photoDataUrl || !/^data:image\/(png|jpe?g|webp);base64,/i.test(payload.photoDataUrl)) {
     throw new Error("Envie uma foto do responsavel.");
