@@ -5939,6 +5939,7 @@
         <div class="field"><label>Cliente</label><select name="clientId">${clientOptions(item.clientId)}</select></div>
         ${field("Data de início", "startDate", item.startDate, "date")}
         ${field("Prazo final", "dueDate", item.dueDate, "date")}
+        ${field("Data limite de pagamento", "paymentDueDate", item.paymentDueDate, "date")}
         <div class="field"><label>Status</label><select name="status">${options(projectStatus, item.status || "Planejamento")}</select></div>
         ${field("Responsável", "owner", item.owner || currentUser.name)}
         ${field("Progresso (%)", "progress", item.progress || 0, "number")}
@@ -6001,6 +6002,7 @@
         ${field("Data de captação", "captureDate", item.captureDate, "date")}
         ${field("Data de edição", "editDate", item.editDate, "date")}
         ${field("Data de entrega", "deliveryDate", item.deliveryDate, "date")}
+        ${field("Data limite de pagamento", "paymentDueDate", item.paymentDueDate, "date")}
         <div class="field"><label>Status</label><select name="status">${options(["A fazer", "Em produção", "Revisão", "Aguardando aprovação", "Concluído"], item.status || "A fazer")}</select></div>
         ${field("Link do arquivo", "fileLink", item.fileLink, "url")}
         <div class="field"><label>Aprovação do cliente</label><select name="approval">${options(["Pendente", "Aprovado", "Ajustes solicitados"], item.approval || "Pendente")}</select></div>
@@ -6084,11 +6086,11 @@
           completedAt: data.status === "Concluído" ? (existing?.completedAt || today()) : "",
           attachmentName: file || existing?.attachmentName || ""
         }),
-        project: () => ({ name: data.name, clientId: data.clientId, description: data.description, startDate: data.startDate, dueDate: data.dueDate, status: data.status, owner: data.owner, progress: clamp(data.progress, 0, 100), budget: Number(data.budget || 0), files: data.files, history: existing?.history || [], roteiros: existing?.roteiros || [] }),
+        project: () => ({ name: data.name, clientId: data.clientId, description: data.description, startDate: data.startDate, dueDate: data.dueDate, paymentDueDate: data.paymentDueDate, paymentReminderSentFor: data.paymentDueDate === existing?.paymentDueDate ? (existing?.paymentReminderSentFor || "") : "", status: data.status, owner: data.owner, progress: clamp(data.progress, 0, 100), budget: Number(data.budget || 0), files: data.files, history: existing?.history || [], roteiros: existing?.roteiros || [] }),
         lead: () => ({ name: data.name, business: data.business, contact: data.contact, email: data.email, whatsapp: data.whatsapp, source: data.source, value: Number(data.value || 0), stage: data.stage || "Novo", owner: data.owner, nextAction: data.nextAction, nextDate: data.nextDate, notes: data.notes, createdAt: existing?.createdAt || today() }),
         client: () => ({ name: data.name, company: data.company, phone: data.phone, whatsapp: data.whatsapp, email: data.email, address: data.address, notes: data.notes }),
         finance: () => ({ title: data.title, type: data.type, category: data.category, value: Number(data.value || 0), date: data.date, clientId: data.clientId, projectId: data.projectId, status: data.status, notes: data.notes, attachmentName: file || existing?.attachmentName || "" }),
-        production: () => ({ type: data.type, clientId: data.clientId, description: data.description, responsible: data.responsible, captureDate: data.captureDate, editDate: data.editDate, deliveryDate: data.deliveryDate, status: data.status, fileLink: data.fileLink, approval: data.approval, notes: data.notes, checklist: splitLines(data.checklist), roteiros: existing?.roteiros || [] }),
+        production: () => ({ type: data.type, clientId: data.clientId, description: data.description, responsible: data.responsible, captureDate: data.captureDate, editDate: data.editDate, deliveryDate: data.deliveryDate, paymentDueDate: data.paymentDueDate, paymentReminderSentFor: data.paymentDueDate === existing?.paymentDueDate ? (existing?.paymentReminderSentFor || "") : "", status: data.status, fileLink: data.fileLink, approval: data.approval, notes: data.notes, checklist: splitLines(data.checklist), roteiros: existing?.roteiros || [] }),
         habit: () => ({ name: data.name, frequency: data.frequency, days: splitList(data.days), target: Number(data.target || 0), streak: Number(data.streak || 0), bestStreak: Number(data.bestStreak || 0), doneToday: existing?.doneToday || false, history: existing?.history || [] }),
         employee: () => ({ name: data.name, roleName: data.roleName, salary: Number(data.salary || 0), absenceCount: Number(data.absenceCount || 0), absenceReason: data.absenceReason, certificateName: certificate || existing?.certificateName || "", advance: Number(data.advance || 0), paymentProof: paymentProof || existing?.paymentProof || "", notes: data.notes })
       };
