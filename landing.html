@@ -342,6 +342,20 @@
   .mock-fin-row .value { display: block; font-size: 1rem; font-weight: 700; }
   .mock-fin-row .value.cyan { color: var(--cyan); }
 
+  /* ---------- Video ---------- */
+
+  .video-frame {
+    max-width: 860px;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    background: #000;
+  }
+
+  .video-frame video { width: 100%; display: block; }
+
   /* ---------- Section heads / cards ---------- */
 
   .section-head { text-align: center; max-width: 620px; margin: 0 auto 46px; }
@@ -848,6 +862,21 @@
             <div><span class="label">Saldo</span><span class="value cyan">R$ 7.220,00</span></div>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="video">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Veja funcionando</div>
+        <h2>O Nexor em menos de um minuto.</h2>
+      </div>
+      <div class="video-frame reveal">
+        <video controls preload="metadata" playsinline>
+          <source src="/nexor-apresentacao.mp4" type="video/mp4">
+          Seu navegador não suporta vídeo HTML5.
+        </video>
       </div>
     </div>
   </section>
