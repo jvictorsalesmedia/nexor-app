@@ -413,7 +413,7 @@
 
   .mini-kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .mini-kanban .col-label { color: var(--muted); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 7px; display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; min-height: 24px; line-height: 1.25; }
-  .mini-kanban .col-label span:first-child { flex: 1; }
+  .mini-kanban .col-label span:first-child { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mini-kanban .card {
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--line);
@@ -911,7 +911,7 @@
               <div class="card">Revisão de conteúdo<div class="avatars"><span></span></div></div>
             </div>
             <div>
-              <div class="col-label"><span>Em andamento</span><span>2</span></div>
+              <div class="col-label"><span>Fazendo</span><span>2</span></div>
               <div class="card">Layout do site<div class="avatars"><span></span><span></span></div></div>
               <div class="card">Configurar integrações<div class="avatars"><span></span></div></div>
             </div>
