@@ -657,16 +657,16 @@
     place-items: center;
   }
 
-  .sv-diamond {
+  .sv-square {
     position: absolute;
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-    background: linear-gradient(160deg, rgba(20,125,140,0.28), rgba(20,179,198,0.08));
-    border: 1px solid rgba(10,125,140,0.16);
+    border-radius: 28%;
+    background: linear-gradient(160deg, rgba(20,179,198,0.18), rgba(10,125,140,0.05));
+    border: 1px solid rgba(10,125,140,0.18);
   }
 
-  .sv-diamond.d1 { width: 280px; height: 160px; top: 4%; left: 4%; transform: rotate(-6deg); }
-  .sv-diamond.d2 { width: 220px; height: 130px; bottom: 6%; right: 6%; transform: rotate(9deg); opacity: 0.75; }
-  .sv-diamond.d3 { width: 160px; height: 96px; top: 54%; left: 54%; transform: translate(-50%, -50%) rotate(3deg); opacity: 0.55; }
+  .sv-square.s1 { width: 190px; height: 190px; transform: rotate(0deg); }
+  .sv-square.s2 { width: 260px; height: 260px; transform: rotate(15deg); opacity: 0.75; }
+  .sv-square.s3 { width: 330px; height: 330px; transform: rotate(30deg); opacity: 0.5; }
 
   .sv-shield {
     position: relative;
@@ -1022,9 +1022,9 @@
       </div>
 
       <div class="security-visual reveal">
-        <div class="sv-diamond d1"></div>
-        <div class="sv-diamond d2"></div>
-        <div class="sv-diamond d3"></div>
+        <div class="sv-square s3"></div>
+        <div class="sv-square s2"></div>
+        <div class="sv-square s1"></div>
         <div class="sv-shield"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"></path><path d="m9 12 2 2 4-4.5"></path></svg></div>
       </div>
     </div>
