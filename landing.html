@@ -591,18 +591,6 @@
   .security-inner h2 { font-size: clamp(1.7rem, 3.2vw, 2.2rem); margin: 0 0 14px; font-weight: 760; text-wrap: balance; }
   .security-inner > div:first-child > p { color: #55554f; line-height: 1.65; max-width: 460px; margin: 0 0 30px; }
 
-  .security-list { display: grid; gap: 18px; margin-bottom: 26px; }
-  .security-list li { list-style: none; display: flex; gap: 14px; align-items: flex-start; }
-  .security-list .sec-icon {
-    width: 34px; height: 34px; border-radius: 9px; flex: 0 0 auto;
-    display: grid; place-items: center;
-    background: rgba(10,125,140,0.08);
-    color: #0a7d8c;
-  }
-  .security-list .sec-icon svg.ico { width: 16px; height: 16px; }
-  .security-list strong { display: block; font-size: 0.92rem; margin-bottom: 2px; }
-  .security-list span { display: block; color: #6b6b64; font-size: 0.84rem; line-height: 1.5; }
-
   .security-pill {
     display: inline-flex;
     align-items: center;
@@ -661,6 +649,42 @@
   .sec-body { padding-top: 9px; }
   .sec-body strong { display: block; font-size: 0.98rem; margin-bottom: 4px; }
   .sec-body span { display: block; font-size: 0.85rem; color: #6b6b64; line-height: 1.5; }
+
+  .security-visual {
+    position: relative;
+    height: 380px;
+    display: grid;
+    place-items: center;
+  }
+
+  .sv-diamond {
+    position: absolute;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    background: linear-gradient(160deg, rgba(20,125,140,0.28), rgba(20,179,198,0.08));
+    border: 1px solid rgba(10,125,140,0.16);
+  }
+
+  .sv-diamond.d1 { width: 280px; height: 160px; top: 4%; left: 4%; transform: rotate(-6deg); }
+  .sv-diamond.d2 { width: 220px; height: 130px; bottom: 6%; right: 6%; transform: rotate(9deg); opacity: 0.75; }
+  .sv-diamond.d3 { width: 160px; height: 96px; top: 54%; left: 54%; transform: translate(-50%, -50%) rotate(3deg); opacity: 0.55; }
+
+  .sv-shield {
+    position: relative;
+    z-index: 1;
+    width: 100px; height: 100px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #0a7d8c, #14b3c6);
+    display: grid;
+    place-items: center;
+    color: #fff;
+    box-shadow: 0 30px 60px rgba(10,125,140,0.4), 0 2px 0 rgba(255,255,255,0.25) inset;
+  }
+
+  .sv-shield svg.ico { width: 46px; height: 46px; }
+
+  @media (max-width: 860px) {
+    .security-visual { display: none; }
+  }
 
   /* ---------- FAQ ---------- */
 
@@ -972,52 +996,36 @@
         <div class="security-lock"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
         <h2>Segurança que você consegue entender.</h2>
         <p>Seus dados e os da sua empresa são seus. Ponto final. A Nexor protege com camadas simples e eficazes para que você trabalhe com tranquilidade.</p>
-        <ul class="security-list">
-          <li>
-            <div class="sec-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
-            <div><strong>Acesso autenticado</strong><span>Você entra com sua conta e só acessa o que é seu.</span></div>
-          </li>
-          <li>
-            <div class="sec-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
-            <div><strong>Permissões por perfil</strong><span>Cada pessoa vê e faz apenas o que deve.</span></div>
-          </li>
-          <li>
-            <div class="sec-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"></path><path d="m9.5 12 2 2 3.5-4"></path></svg></div>
-            <div><strong>Conexão protegida</strong><span>Seus dados trafegam criptografados.</span></div>
-          </li>
-          <li>
-            <div class="sec-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></div>
-            <div><strong>Isolamento entre empresas</strong><span>Cada negócio é separado dos demais.</span></div>
-          </li>
-          <li>
-            <div class="sec-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10"></path><path d="M4 12h16"></path><path d="M4 18h7"></path><circle cx="16" cy="6" r="2"></circle><circle cx="9" cy="18" r="2"></circle></svg></div>
-            <div><strong>Controle sobre seus dados</strong><span>Você decide exportar ou revisar quando quiser.</span></div>
-          </li>
-        </ul>
+        <div class="security-diagram">
+          <div class="sec-item">
+            <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div></div>
+            <div class="sec-body"><strong>Acesso autenticado</strong><span>Você entra com sua conta e só acessa o que é seu.</span></div>
+          </div>
+          <div class="sec-item">
+            <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></div></div>
+            <div class="sec-body"><strong>Permissões por perfil</strong><span>Cada pessoa vê e faz apenas o que deve.</span></div>
+          </div>
+          <div class="sec-item">
+            <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"></path></svg></div></div>
+            <div class="sec-body"><strong>Conexão protegida</strong><span>Seus dados trafegam criptografados.</span></div>
+          </div>
+          <div class="sec-item">
+            <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></div></div>
+            <div class="sec-body"><strong>Isolamento entre empresas</strong><span>Cada negócio é separado dos demais.</span></div>
+          </div>
+          <div class="sec-item">
+            <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10"></path><path d="M4 12h16"></path><path d="M4 18h7"></path><circle cx="16" cy="6" r="2"></circle><circle cx="9" cy="18" r="2"></circle></svg></div></div>
+            <div class="sec-body"><strong>Seus dados</strong><span>Você decide exportar ou revisar quando quiser.</span></div>
+          </div>
+        </div>
         <span class="security-pill">Seus dados não são usados para publicidade.</span>
       </div>
 
-      <div class="security-diagram reveal">
-        <div class="sec-item">
-          <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div></div>
-          <div class="sec-body"><strong>Acesso autenticado</strong><span>Você entra com sua conta e só acessa o que é seu.</span></div>
-        </div>
-        <div class="sec-item">
-          <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></div></div>
-          <div class="sec-body"><strong>Permissões por perfil</strong><span>Cada pessoa vê e faz apenas o que deve.</span></div>
-        </div>
-        <div class="sec-item">
-          <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"></path></svg></div></div>
-          <div class="sec-body"><strong>Conexão protegida</strong><span>Seus dados trafegam criptografados.</span></div>
-        </div>
-        <div class="sec-item">
-          <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></div></div>
-          <div class="sec-body"><strong>Isolamento entre empresas</strong><span>Cada negócio é separado dos demais.</span></div>
-        </div>
-        <div class="sec-item">
-          <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10"></path><path d="M4 12h16"></path><path d="M4 18h7"></path><circle cx="16" cy="6" r="2"></circle><circle cx="9" cy="18" r="2"></circle></svg></div></div>
-          <div class="sec-body"><strong>Seus dados</strong><span>Você decide exportar ou revisar quando quiser.</span></div>
-        </div>
+      <div class="security-visual reveal">
+        <div class="sv-diamond d1"></div>
+        <div class="sv-diamond d2"></div>
+        <div class="sv-diamond d3"></div>
+        <div class="sv-shield"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"></path><path d="m9 12 2 2 4-4.5"></path></svg></div>
       </div>
     </div>
   </section>
