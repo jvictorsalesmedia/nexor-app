@@ -542,18 +542,20 @@
     left: 50%;
     width: 230px;
     height: 84px;
-    background: linear-gradient(155deg, #ffffff, #dff5f7);
-    border: 1px solid rgba(10,125,140,0.25);
     border-radius: 16px;
     transform: translateX(-50%) perspective(600px) rotateX(55deg) rotateZ(45deg);
-    box-shadow: 0 18px 30px rgba(10,125,140,0.12);
+    box-shadow:
+      inset 0 1.5px 0 rgba(255,255,255,0.95),
+      inset 0 -14px 18px -12px rgba(10,125,140,0.3),
+      0 4px 0 rgba(10,125,140,0.22),
+      0 26px 34px -6px rgba(10,125,140,0.18);
   }
 
-  .sd-layer:nth-child(1) { top: 6px; }
-  .sd-layer:nth-child(2) { top: 66px; }
-  .sd-layer:nth-child(3) { top: 126px; }
-  .sd-layer:nth-child(4) { top: 186px; }
-  .sd-layer:nth-child(5) { top: 246px; }
+  .sd-layer:nth-child(1) { top: 6px; background: linear-gradient(155deg, #ffffff, #e9f8f9); border: 1px solid rgba(10,125,140,0.16); }
+  .sd-layer:nth-child(2) { top: 66px; background: linear-gradient(155deg, #fbfffe, #dff5f7); border: 1px solid rgba(10,125,140,0.2); }
+  .sd-layer:nth-child(3) { top: 126px; background: linear-gradient(155deg, #f6fdfd, #d3f0f3); border: 1px solid rgba(10,125,140,0.24); }
+  .sd-layer:nth-child(4) { top: 186px; background: linear-gradient(155deg, #f1fbfb, #c6ebef); border: 1px solid rgba(10,125,140,0.28); }
+  .sd-layer:nth-child(5) { top: 246px; background: linear-gradient(155deg, #ecf9f9, #b9e6eb); border: 1px solid rgba(10,125,140,0.32); }
 
   .sd-shield {
     position: absolute;
@@ -571,7 +573,18 @@
   }
   .sd-shield svg.ico { width: 24px; height: 24px; }
 
-  .sd-connector { position: absolute; height: 1px; background: rgba(10,125,140,0.35); }
+  .sd-connector { position: absolute; height: 1px; background: linear-gradient(90deg, rgba(10,125,140,0.5), rgba(10,125,140,0.25)); }
+  .sd-connector::before, .sd-connector::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #0a7d8c;
+    transform: translateY(-50%);
+  }
+  .sd-connector::before { left: -2.5px; }
+  .sd-connector::after { right: -2.5px; opacity: 0.4; }
   .sd-label { position: absolute; font-size: 0.76rem; white-space: nowrap; }
   .sd-label strong { display: block; font-size: 0.8rem; color: #0d0d0d; }
   .sd-label span { color: #6b6b64; font-size: 0.72rem; }
@@ -593,6 +606,26 @@
 
   @media (max-width: 860px) {
     .security-diagram { display: none; }
+  }
+
+  .reveal.is-visible .sd-layer {
+    animation: sdLayerIn 720ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  .reveal.is-visible .sd-layer:nth-child(1) { animation-delay: 60ms; }
+  .reveal.is-visible .sd-layer:nth-child(2) { animation-delay: 150ms; }
+  .reveal.is-visible .sd-layer:nth-child(3) { animation-delay: 240ms; }
+  .reveal.is-visible .sd-layer:nth-child(4) { animation-delay: 330ms; }
+  .reveal.is-visible .sd-layer:nth-child(5) { animation-delay: 420ms; }
+
+  @keyframes sdLayerIn {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) perspective(600px) rotateX(55deg) rotateZ(45deg) translateY(-18px) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) perspective(600px) rotateX(55deg) rotateZ(45deg) translateY(0) scale(1);
+    }
   }
 
   /* ---------- Final CTA ---------- */
