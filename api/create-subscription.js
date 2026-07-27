@@ -11,9 +11,15 @@ module.exports = async function handler(req, res) {
   try {
     const supabaseUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "";
-    const asaasApiKey = process.env.ASAAS_API_KEY || "";
+    const asaasApiKey = String(process.env.ASAAS_API_KEY || "").trim();
     if (!supabaseUrl || !serviceKey) throw new Error("Supabase server env is missing.");
     if (!asaasApiKey) throw new Error("ASAAS_API_KEY nao configurada.");
+    // Detecta env var mal colada (ex: duas linhas coladas no mesmo campo) antes
+    // de usar o valor num header, pra nao deixar um erro nativo do fetch
+    // vazar o conteudo da chave na mensagem de erro.
+    if (/\s/.test(asaasApiKey) || !asaasApiKey.startsWith("$aact_")) {
+      throw new Error("ASAAS_API_KEY malformada.");
+    }
 
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
     const requestId = String(body.requestId || "").trim();
@@ -75,7 +81,11 @@ module.exports = async function handler(req, res) {
 
     res.status(200).json({ invoiceUrl });
   } catch (error) {
-    res.status(400).json({ error: error.message || "Nao foi possivel gerar a cobranca." });
+    // Nunca ecoar error.message pro cliente: pode conter detalhe interno
+    // (ex: valor de header/env var invalido aparece na mensagem de erro
+    // nativa do fetch). Log fica só no servidor.
+    console.error("create-subscription:", error.message);
+    res.status(400).json({ error: "Nao foi possivel gerar a cobranca. Tente novamente em instantes." });
   }
 };
 
