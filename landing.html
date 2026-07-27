@@ -56,19 +56,13 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  h1, h2, h3, .brand span, .kicker, .step-number, .chat-head {
-    font-family: var(--font-display);
-  }
+  h1, h2, h3, .brand span, .kicker, .step-number, .chat-head { font-family: var(--font-display); }
 
   a { color: inherit; }
-
   img { max-width: 100%; display: block; }
+  svg.ico { width: 1em; height: 1em; }
 
-  .wrap {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 0 22px;
-  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 22px; }
 
   header.topbar {
     position: sticky;
@@ -79,32 +73,15 @@
     border-bottom: 1px solid var(--line);
   }
 
-  .topbar-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 0;
-  }
+  .topbar-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
 
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    font-size: 1.05rem;
-  }
-
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; }
   .brand img { width: 30px; height: 30px; object-fit: contain; }
 
-  .topbar nav {
-    display: flex;
-    align-items: center;
-    gap: 22px;
-    font-size: 0.86rem;
-    color: var(--muted);
-  }
-
+  .topbar nav { display: flex; align-items: center; gap: 26px; font-size: 0.86rem; color: var(--muted); }
   .topbar nav a:hover { color: var(--text); }
+  .topbar nav .nav-login { color: var(--muted); text-decoration: none; }
+  .topbar nav .nav-login:hover { color: var(--text); }
 
   .btn {
     display: inline-flex;
@@ -124,12 +101,7 @@
   }
 
   .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.3); }
-
-  .btn.primary {
-    background: #fff;
-    color: #000;
-    border-color: #fff;
-  }
+  .btn.primary { background: #fff; color: #000; border-color: #fff; }
 
   .btn.cyan {
     background: linear-gradient(135deg, #22c9e8, #5eecff);
@@ -138,16 +110,35 @@
     box-shadow: 0 0 32px rgba(94,236,255,0.28);
   }
 
+  .btn.whatsapp {
+    background: rgba(37,211,102,0.12);
+    border-color: rgba(37,211,102,0.4);
+    color: #4fe08a;
+  }
+
   .btn.small { padding: 8px 14px; font-size: 0.8rem; }
+  .btn svg.ico { width: 15px; height: 15px; }
 
   section { padding: 96px 0; }
 
-  .hero {
-    position: relative;
-    padding: 96px 0 70px;
-    text-align: center;
-    overflow: hidden;
+  .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    font-weight: 700;
+    margin-bottom: 16px;
   }
+
+  .kicker.on-dark { color: var(--cyan); }
+  .kicker.on-light { color: #0a7d8c; }
+
+  /* ---------- Hero ---------- */
+
+  .hero { position: relative; padding: 88px 0 70px; overflow: hidden; }
 
   .hero::before,
   .ai-section::before {
@@ -160,233 +151,210 @@
     transition: background 80ms linear;
   }
 
-  .hero > .wrap {
-    position: relative;
-    z-index: 1;
-  }
+  .hero > .wrap { position: relative; z-index: 1; }
 
-  .hero .kicker {
-    display: inline-flex;
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
     align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-    margin-bottom: 22px;
   }
 
   .hero h1 {
-    font-size: clamp(2.2rem, 5.4vw, 3.6rem);
-    line-height: 1.08;
+    font-size: clamp(2rem, 3.6vw, 2.9rem);
+    line-height: 1.12;
     font-weight: 760;
-    margin: 0 auto 18px;
-    max-width: 760px;
+    margin: 0 0 18px;
+    text-wrap: balance;
   }
 
-  .hero p.lead {
-    color: var(--muted);
-    font-size: 1.08rem;
-    max-width: 620px;
-    margin: 0 auto 34px;
-    line-height: 1.55;
-  }
+  .hero p.lead { color: var(--muted); font-size: 1.05rem; max-width: 480px; margin: 0 0 30px; line-height: 1.6; }
 
-  .hero-actions {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
   .hero-note {
-    margin-top: 14px;
-    color: var(--muted);
-    font-size: 0.8rem;
-  }
-
-  .mock {
-    margin: 64px auto 0;
-    max-width: 980px;
-    border-radius: 22px;
-    border: 1px solid var(--line);
-    background: linear-gradient(180deg, #101010, #050505);
-    box-shadow: 0 40px 100px rgba(0,0,0,0.55);
-    overflow: hidden;
-  }
-
-  .mock-bar {
-    display: flex;
-    gap: 6px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .mock-bar span {
-    width: 9px; height: 9px; border-radius: 50%;
-    background: rgba(255,255,255,0.16);
-  }
-
-  .mock-body {
-    display: flex;
-  }
-
-  .mock-sidebar {
-    width: 168px;
-    flex: 0 0 auto;
-    border-right: 1px solid var(--line);
-    padding: 16px 12px;
-  }
-
-  .mock-brand {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    margin-bottom: 18px;
-    padding: 0 4px;
-  }
-
-  .mock-brand img { width: 18px; height: 18px; object-fit: contain; }
-
-  .mock-nav-group {
-    margin-bottom: 14px;
-  }
-
-  .mock-nav-label {
-    display: block;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    margin-top: 18px;
     color: var(--muted);
-    padding: 0 8px 6px;
+    font-size: 0.82rem;
   }
 
-  .mock-nav-item {
-    font-size: 0.76rem;
-    padding: 7px 8px;
-    border-radius: 8px;
-    color: var(--muted);
-  }
+  .hero-note svg.ico { color: var(--cyan); flex: 0 0 auto; }
 
-  .mock-nav-item.active {
-    color: var(--text);
-    background: rgba(255,255,255,0.06);
-  }
+  /* ---------- Hero product mock ---------- */
 
-  .mock-main {
-    flex: 1;
-    min-width: 0;
-    padding: 18px 22px 22px;
-  }
-
-  .mock-topbar {
-    margin-bottom: 16px;
-  }
-
-  .mock-search {
-    height: 26px;
-    max-width: 220px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.04);
+  .mock {
+    border-radius: 20px;
     border: 1px solid var(--line);
-  }
-
-  .mock-grid {
+    background: linear-gradient(180deg, #101010, #050505);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.55);
+    padding: 18px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 14px;
   }
 
-  .mock-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--line);
+  .mock-command {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
     border-radius: 12px;
-    padding: 14px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.03);
+    font-size: 0.86rem;
+    color: var(--muted);
+  }
+
+  .mock-command-icon {
+    width: 26px; height: 26px; border-radius: 8px;
+    display: grid; place-items: center;
+    background: #0a0a0a;
+    border: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--cyan);
+    flex: 0 0 auto;
+  }
+
+  .mock-command-send {
+    margin-left: auto;
+    width: 26px; height: 26px; border-radius: 8px;
+    display: grid; place-items: center;
+    background: var(--cyan);
+    color: #001417;
+    flex: 0 0 auto;
+  }
+
+  .mock-panel {
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.025);
+    padding: 16px;
     animation: mockPop 520ms ease backwards;
   }
 
-  .mock-grid .mock-card:nth-child(1) { animation-delay: 60ms; }
-  .mock-grid .mock-card:nth-child(2) { animation-delay: 150ms; }
-  .mock-grid .mock-card:nth-child(3) { animation-delay: 240ms; }
-  .mock-grid .mock-card:nth-child(4) { animation-delay: 330ms; }
+  .mock-panel:nth-of-type(2) { animation-delay: 90ms; }
+  .mock-panel:nth-of-type(3) { animation-delay: 180ms; }
+  .mock-panel:nth-of-type(4) { animation-delay: 270ms; }
 
   @keyframes mockPop {
-    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  .mock-card .label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-  .mock-card .value { font-size: 1.2rem; font-weight: 700; margin-top: 6px; }
-  .mock-card .delta { font-size: 0.72rem; color: #7ee7a8; margin-top: 4px; }
-
-  .mock-charts {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 12px;
-    margin-top: 12px;
+  .mock-panel-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
   }
 
-  .mock-chart-card,
-  .mock-donut-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 14px;
+  .mock-panel-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
   }
 
-  .mock-chart-label {
+  .mock-select {
     font-size: 0.7rem;
     color: var(--muted);
-    margin-bottom: 10px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
   }
 
-  .mock-line { width: 100%; height: 60px; }
-
-  .mock-line polyline {
-    stroke-dasharray: 400;
-    stroke-dashoffset: 400;
-    animation: drawLine 1.4s ease-out 0.5s forwards;
+  .mock-task {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 0.8rem;
   }
 
-  @keyframes drawLine {
-    to { stroke-dashoffset: 0; }
+  .mock-task .box {
+    width: 15px; height: 15px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.3);
+    flex: 0 0 auto;
   }
 
-  .mock-donut {
-    width: 74px;
-    height: 74px;
-    border-radius: 50%;
-    margin: 0 auto;
-    background: conic-gradient(rgba(255,255,255,0.85) 0deg 130deg, rgba(255,255,255,0.5) 130deg 230deg, rgba(255,255,255,0.22) 230deg 360deg);
-    position: relative;
-    animation: mockPop 600ms ease 0.4s backwards;
+  .mock-task span.name { flex: 1; color: var(--text); }
+
+  .chip {
+    font-size: 0.66rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
   }
 
-  .mock-donut::after {
-    content: "";
-    position: absolute;
-    inset: 13px;
-    border-radius: 50%;
-    background: #0d0d0d;
+  .chip.progress { background: rgba(255,255,255,0.08); color: var(--muted); }
+  .chip.done { background: rgba(126,231,168,0.15); color: #7ee7a8; }
+  .chip.scheduled { background: rgba(159,140,255,0.18); color: #b4a5ff; }
+
+  .mock-project { padding: 9px 0; font-size: 0.8rem; }
+  .mock-project-head { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+  .mock-project-head .sq { width: 8px; height: 8px; border-radius: 2px; flex: 0 0 auto; }
+  .mock-project-head .name { color: var(--text); flex: 1; }
+  .mock-project-head .stage { color: var(--muted); font-size: 0.72rem; }
+  .mock-project-head .pct { color: var(--text); font-weight: 600; font-size: 0.74rem; width: 34px; text-align: right; }
+
+  .mock-bar-track { height: 5px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .mock-bar-fill { height: 100%; border-radius: 999px; }
+
+  .mock-fin-row { display: flex; gap: 18px; }
+  .mock-fin-row > div { flex: 1; }
+  .mock-fin-row .label { display: block; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .mock-fin-row .value { display: block; font-size: 1rem; font-weight: 700; }
+  .mock-fin-row .value.cyan { color: var(--cyan); }
+
+  /* ---------- Process flow ---------- */
+
+  .flow-section { background: #050505; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+
+  .flow-eyebrow { text-align: center; }
+
+  .flow-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 40px;
+    flex-wrap: wrap;
   }
+
+  .flow-step { display: flex; flex-direction: column; align-items: center; text-align: center; width: 168px; }
+
+  .flow-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: grid; place-items: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--line);
+    margin-bottom: 14px;
+    color: var(--cyan);
+  }
+
+  .flow-icon svg.ico { width: 22px; height: 22px; }
+  .flow-step h3 { margin: 0 0 6px; font-size: 0.92rem; font-family: var(--font); font-weight: 600; }
+  .flow-step p { margin: 0; font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+  .flow-arrow { color: var(--line); font-size: 1.2rem; padding-top: 16px; flex: 0 0 auto; }
+
+  @media (max-width: 900px) {
+    .flow-arrow { display: none; }
+  }
+
+  /* ---------- Section heads / cards ---------- */
 
   .section-head { text-align: center; max-width: 620px; margin: 0 auto 46px; }
-  .section-head .eyebrow {
-    font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 10px;
-  }
-  .section-head h2 { font-size: clamp(1.7rem, 3.4vw, 2.3rem); margin: 0 0 12px; font-weight: 720; }
+  .section-head .eyebrow { font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .section-head h2 { font-size: clamp(1.7rem, 3.4vw, 2.3rem); margin: 0 0 12px; font-weight: 720; text-wrap: balance; }
   .section-head p { color: var(--muted); line-height: 1.6; }
 
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 
   .feature-card {
     background: var(--panel);
@@ -396,30 +364,66 @@
     transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
   }
 
-  .feature-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255,255,255,0.22);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-  }
+  .feature-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.22); box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
 
   .feature-card .icon-dot {
     width: 38px; height: 38px; border-radius: 10px;
     display: grid; place-items: center;
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    background: color-mix(in srgb, var(--cyan) 10%, transparent);
+    color: var(--cyan);
     border: 1px solid var(--line);
-    margin-bottom: 14px;
-    font-size: 1.1rem;
+    margin-bottom: 16px;
     transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
   }
 
-  .feature-card:hover .icon-dot {
-    transform: scale(1.1);
-    border-color: rgba(94,236,255,0.4);
-    box-shadow: 0 0 16px rgba(94,236,255,0.28);
+  .feature-card .icon-dot svg.ico { width: 18px; height: 18px; }
+
+  .feature-card:hover .icon-dot { transform: scale(1.1); border-color: rgba(94,236,255,0.4); box-shadow: 0 0 16px rgba(94,236,255,0.28); }
+
+  .feature-card h3 { margin: 0 0 6px; font-size: 1.02rem; }
+  .feature-card p { margin: 0 0 18px; color: var(--muted); font-size: 0.86rem; line-height: 1.55; }
+
+  .mini {
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.02);
+    padding: 14px;
+    font-size: 0.72rem;
   }
 
-  .feature-card h3 { margin: 0 0 6px; font-size: 1rem; }
-  .feature-card p { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.55; }
+  .mini-kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .mini-kanban .col-label { color: var(--muted); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 7px; display: flex; justify-content: space-between; }
+  .mini-kanban .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 8px;
+    margin-bottom: 6px;
+    color: var(--text);
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+  .mini-kanban .avatars { display: flex; gap: 3px; margin-top: 4px; }
+  .mini-kanban .avatars span { width: 14px; height: 14px; border-radius: 50%; background: rgba(94,236,255,0.25); border: 1px solid rgba(94,236,255,0.4); }
+
+  .mini-client .mc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .mini-client .mc-head strong { color: var(--text); font-size: 0.8rem; }
+  .mini-client .mc-tag { font-size: 0.62rem; padding: 2px 8px; border-radius: 999px; background: rgba(126,231,168,0.15); color: #7ee7a8; }
+  .mini-client .mc-row { display: flex; justify-content: space-between; padding: 5px 0; border-top: 1px solid var(--line); color: var(--muted); }
+  .mini-client .mc-row span:last-child { color: var(--text); text-align: right; }
+
+  .mini-chart .mc-title { display: flex; justify-content: space-between; color: var(--muted); margin-bottom: 10px; }
+  .mini-chart .bars { display: flex; align-items: flex-end; gap: 4px; height: 60px; margin-bottom: 8px; }
+  .mini-chart .bars .b { flex: 1; border-radius: 3px 3px 0 0; }
+  .mini-chart .bars .b.rev { background: rgba(94,236,255,0.55); }
+  .mini-chart .bars .b.exp { background: rgba(255,255,255,0.16); }
+  .mini-chart .legend { display: flex; gap: 12px; color: var(--muted); align-items: center; }
+  .mini-chart .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .mini-chart .legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+  .mini-chart .total { margin-top: 10px; color: var(--muted); }
+  .mini-chart .total b { display: block; color: var(--text); font-size: 0.86rem; margin-top: 2px; }
+
+  /* ---------- Nex AI / WhatsApp shared ---------- */
 
   .ai-section {
     position: relative;
@@ -429,290 +433,205 @@
     border-bottom: 1px solid var(--line);
   }
 
-  .ai-section::before {
-    background: radial-gradient(560px circle at var(--mx) var(--my), rgba(94,236,255,0.14), transparent 60%);
-  }
+  .ai-section::before { background: radial-gradient(560px circle at var(--mx) var(--my), rgba(94,236,255,0.14), transparent 60%); }
+  .ai-section > .wrap { position: relative; z-index: 1; }
 
-  .ai-section > .wrap {
-    position: relative;
-    z-index: 1;
-  }
+  .ai-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+  .ai-badge { width: 84px; height: 84px; border-radius: 20px; margin-bottom: 22px; }
+  .ai-inner h2 { font-size: clamp(1.8rem, 3.6vw, 2.5rem); margin: 0 0 16px; font-weight: 760; text-wrap: balance; }
+  .ai-inner > div:first-child p.lead { color: var(--muted); line-height: 1.6; margin-bottom: 26px; max-width: 460px; }
 
-  .ai-inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 56px;
-    align-items: center;
-  }
-
-  .ai-badge {
-    width: 96px; height: 96px;
-    border-radius: 22px;
-    margin-bottom: 22px;
-  }
-
-  .ai-inner h2 {
-    font-size: clamp(1.8rem, 3.6vw, 2.5rem);
-    margin: 0 0 16px;
-    font-weight: 760;
-  }
-
-  .ai-inner > div:first-child p.lead {
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 26px;
-    max-width: 460px;
-  }
-
-  .ai-list {
-    display: grid;
-    gap: 14px;
-    margin-bottom: 30px;
-  }
-
-  .ai-list li {
-    list-style: none;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    font-size: 0.92rem;
-    color: var(--text);
-  }
-
-  .ai-list li::before {
-    content: "";
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--cyan);
-    box-shadow: 0 0 10px rgba(94,236,255,0.7);
-    margin-top: 7px;
-    flex: 0 0 auto;
-  }
-
+  .ai-list { display: grid; gap: 14px; margin-bottom: 30px; }
+  .ai-list li { list-style: none; display: flex; gap: 12px; align-items: flex-start; font-size: 0.92rem; color: var(--text); }
+  .ai-list li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px rgba(94,236,255,0.7); margin-top: 7px; flex: 0 0 auto; }
   .ai-list li > div { flex: 1; min-width: 0; }
   .ai-list li strong { display: block; margin-bottom: 4px; }
   .ai-list li span { display: block; color: var(--muted); line-height: 1.5; }
 
-  .ai-chat-mock {
-    background: var(--panel);
-    border: 1px solid rgba(94,236,255,0.22);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
-  }
+  .ai-check-list { display: grid; gap: 12px; margin-bottom: 30px; }
+  .ai-check-list li { list-style: none; display: flex; align-items: center; gap: 10px; font-size: 0.92rem; color: var(--text); }
+  .ai-check-list svg.ico { color: #4fe08a; flex: 0 0 auto; }
 
-  .ai-chat-mock .chat-head {
-    display: flex; align-items: center; gap: 10px;
-    padding-bottom: 14px; margin-bottom: 14px;
-    border-bottom: 1px solid var(--line);
-    font-size: 0.86rem; font-weight: 600;
-  }
-
+  .ai-chat-mock { background: var(--panel); border: 1px solid rgba(94,236,255,0.22); border-radius: 20px; padding: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+  .ai-chat-mock .chat-head { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--line); font-size: 0.86rem; font-weight: 600; }
   .ai-chat-mock .chat-head img { width: 26px; height: 26px; border-radius: 7px; }
 
-  .bubble {
-    max-width: 84%;
-    padding: 10px 13px;
-    border-radius: 14px;
-    font-size: 0.84rem;
-    line-height: 1.45;
-    margin-bottom: 10px;
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 320ms ease, transform 320ms ease;
-  }
-
-  .bubble.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .bubble.user {
-    margin-left: auto;
-    background: #fff;
-    color: #000;
-  }
-
-  .bubble.ai {
-    background: color-mix(in srgb, var(--cyan) 10%, transparent);
-    border: 1px solid color-mix(in srgb, var(--cyan) 26%, var(--line));
-  }
-
-  .bubble.typing {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    width: fit-content;
-    padding: 12px 14px;
-  }
-
-  .bubble.typing span {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--cyan);
-    opacity: 0.5;
-    animation: typingDot 1s infinite ease-in-out;
-  }
-
+  .bubble { max-width: 84%; padding: 10px 13px; border-radius: 14px; font-size: 0.84rem; line-height: 1.45; margin-bottom: 10px; opacity: 0; transform: translateY(6px); transition: opacity 320ms ease, transform 320ms ease; }
+  .bubble.show { opacity: 1; transform: translateY(0); }
+  .bubble.user { margin-left: auto; background: #fff; color: #000; }
+  .bubble.ai { background: color-mix(in srgb, var(--cyan) 10%, transparent); border: 1px solid color-mix(in srgb, var(--cyan) 26%, var(--line)); }
+  .bubble.typing { display: flex; gap: 4px; align-items: center; width: fit-content; padding: 12px 14px; }
+  .bubble.typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); opacity: 0.5; animation: typingDot 1s infinite ease-in-out; }
   .bubble.typing span:nth-child(2) { animation-delay: 0.15s; }
   .bubble.typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes typingDot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
 
-  @keyframes typingDot {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-    30% { transform: translateY(-4px); opacity: 1; }
+  /* ---------- WhatsApp phone mock ---------- */
+
+  .wa-mock { background: #0b0f10; border: 1px solid rgba(94,236,255,0.18); border-radius: 22px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.55); }
+
+  .wa-head { display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: #111a1c; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .wa-head img { width: 30px; height: 30px; border-radius: 50%; }
+  .wa-head .who { flex: 1; min-width: 0; }
+  .wa-head .who strong { display: block; font-size: 0.86rem; }
+  .wa-head .who span { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #4fe08a; }
+  .wa-head .who span::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #4fe08a; }
+  .wa-head .wa-icons { display: flex; gap: 14px; color: var(--muted); }
+  .wa-head .wa-icons svg.ico { width: 17px; height: 17px; }
+
+  .wa-body { padding: 18px 16px; min-height: 220px; background: radial-gradient(circle at 80% 0%, rgba(94,236,255,0.05), transparent 60%); }
+
+  .wa-bubble { max-width: 82%; padding: 9px 12px 14px; border-radius: 12px; font-size: 0.82rem; line-height: 1.45; margin-bottom: 10px; position: relative; opacity: 0; transform: translateY(6px); transition: opacity 320ms ease, transform 320ms ease; }
+  .wa-bubble.show { opacity: 1; transform: translateY(0); }
+  .wa-bubble.out { margin-left: auto; background: #0a4a3d; color: #eafff6; border-bottom-right-radius: 3px; }
+  .wa-bubble.in { background: #1f2c30; color: #f1f1ef; border-bottom-left-radius: 3px; }
+  .wa-bubble .wa-time { position: absolute; right: 10px; bottom: 3px; font-size: 0.6rem; color: rgba(255,255,255,0.45); display: flex; align-items: center; gap: 3px; }
+  .wa-bubble.out .wa-time svg.ico { width: 12px; height: 12px; color: #8fd8ff; }
+
+  .wa-input { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #111a1c; border-top: 1px solid rgba(255,255,255,0.06); }
+  .wa-input .field { flex: 1; height: 34px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); padding: 0 14px; display: flex; align-items: center; color: var(--muted); font-size: 0.78rem; }
+  .wa-input .wa-icons-row { display: flex; gap: 10px; color: var(--muted); }
+  .wa-input .wa-icons-row svg.ico { width: 17px; height: 17px; }
+  .wa-input .send { width: 34px; height: 34px; border-radius: 50%; background: var(--cyan); color: #001417; display: grid; place-items: center; flex: 0 0 auto; }
+  .wa-input .send svg.ico { width: 16px; height: 16px; }
+
+  /* ---------- Security (light) ---------- */
+
+  .security-section { background: #f1f1ef; color: #0d0d0d; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .security-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+
+  .security-lock {
+    width: 46px; height: 46px; border-radius: 12px;
+    display: grid; place-items: center;
+    background: rgba(10,125,140,0.1);
+    color: #0a7d8c;
+    margin-bottom: 18px;
   }
+  .security-lock svg.ico { width: 22px; height: 22px; }
 
-  .modules-list {
-    display: grid;
-    gap: 10px;
+  .security-inner h2 { font-size: clamp(1.7rem, 3.2vw, 2.2rem); margin: 0 0 14px; font-weight: 760; text-wrap: balance; }
+  .security-inner > div:first-child > p { color: #55554f; line-height: 1.65; max-width: 460px; margin: 0 0 30px; }
+
+  .security-list { display: grid; gap: 18px; margin-bottom: 26px; }
+  .security-list li { list-style: none; display: flex; gap: 14px; align-items: flex-start; }
+  .security-list .sec-icon {
+    width: 34px; height: 34px; border-radius: 9px; flex: 0 0 auto;
+    display: grid; place-items: center;
+    background: rgba(10,125,140,0.08);
+    color: #0a7d8c;
   }
+  .security-list .sec-icon svg.ico { width: 16px; height: 16px; }
+  .security-list strong { display: block; font-size: 0.92rem; margin-bottom: 2px; }
+  .security-list span { display: block; color: #6b6b64; font-size: 0.84rem; line-height: 1.5; }
 
-  .module-row {
-    display: grid;
-    grid-template-columns: 160px 1fr;
-    gap: 18px;
-    align-items: baseline;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .module-row:last-child { border-bottom: 0; }
-
-  .module-row .group-tag {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-  }
-
-  .module-row .items {
-    display: flex;
-    flex-wrap: wrap;
+  .security-pill {
+    display: inline-flex;
+    align-items: center;
     gap: 8px;
-  }
-
-  .module-row .items span {
-    font-size: 0.82rem;
-    padding: 6px 12px;
+    padding: 9px 16px;
     border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--panel);
-    color: var(--text);
+    background: rgba(0,0,0,0.05);
+    font-size: 0.8rem;
+    color: #3a3a35;
   }
 
-  .steps-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
-    counter-reset: step;
-  }
+  .security-diagram { position: relative; height: 420px; }
 
-  .step-card {
-    position: relative;
-    padding: 26px 22px 22px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--panel);
-    transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
-  }
-
-  .step-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255,255,255,0.22);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-  }
-
-  .step-card .step-number {
-    counter-increment: step;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    margin-bottom: 12px;
-  }
-
-  .step-card .step-number::before {
-    content: "0" counter(step);
-    margin-right: 8px;
-    color: var(--text);
-  }
-
-  .step-card h3 { margin: 0 0 6px; font-size: 1rem; }
-  .step-card p { margin: 0; color: var(--muted); font-size: 0.86rem; line-height: 1.55; }
-
-  .step-card:not(:last-child)::after {
-    content: "";
+  .sd-layer {
     position: absolute;
-    top: 50%;
-    right: -22px;
-    width: 22px;
-    height: 1px;
-    background: var(--line);
-    display: none;
+    left: 50%;
+    width: 230px;
+    height: 84px;
+    background: linear-gradient(155deg, #ffffff, #dff5f7);
+    border: 1px solid rgba(10,125,140,0.25);
+    border-radius: 16px;
+    transform: translateX(-50%) perspective(600px) rotateX(55deg) rotateZ(45deg);
+    box-shadow: 0 18px 30px rgba(10,125,140,0.12);
   }
+
+  .sd-layer:nth-child(1) { top: 6px; }
+  .sd-layer:nth-child(2) { top: 66px; }
+  .sd-layer:nth-child(3) { top: 126px; }
+  .sd-layer:nth-child(4) { top: 186px; }
+  .sd-layer:nth-child(5) { top: 246px; }
+
+  .sd-shield {
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0a7d8c, #14b3c6);
+    display: grid;
+    place-items: center;
+    color: #fff;
+    box-shadow: 0 14px 30px rgba(10,125,140,0.35);
+    z-index: 2;
+  }
+  .sd-shield svg.ico { width: 24px; height: 24px; }
+
+  .sd-connector { position: absolute; height: 1px; background: rgba(10,125,140,0.35); }
+  .sd-label { position: absolute; font-size: 0.76rem; white-space: nowrap; }
+  .sd-label strong { display: block; font-size: 0.8rem; color: #0d0d0d; }
+  .sd-label span { color: #6b6b64; font-size: 0.72rem; }
 
   @media (min-width: 861px) {
-    .step-card:not(:last-child)::after { display: block; }
-  }
-
-  .reveal {
-    opacity: 0;
-    transform: translateY(18px);
-    transition: opacity 640ms ease, transform 640ms ease;
-  }
-
-  .reveal.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .cta-section {
-    text-align: center;
-  }
-
-  .cta-box {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    padding: 64px 32px;
-    max-width: 720px;
-    margin: 0 auto;
-  }
-
-  .cta-box h2 { font-size: clamp(1.7rem, 3.4vw, 2.3rem); margin: 0 0 14px; font-weight: 760; }
-  .cta-box p { color: var(--muted); margin: 0 0 30px; line-height: 1.6; }
-
-  footer {
-    border-top: 1px solid var(--line);
-    padding: 30px 0;
-  }
-
-  footer .wrap {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    color: var(--muted);
-    font-size: 0.82rem;
+    .sd-connector:nth-of-type(1) { top: 40px; left: 62%; width: 90px; }
+    .sd-connector:nth-of-type(2) { top: 100px; left: 62%; width: 90px; }
+    .sd-connector:nth-of-type(3) { top: 160px; left: 62%; width: 90px; }
+    .sd-connector:nth-of-type(4) { top: 220px; left: 62%; width: 90px; }
+    .sd-connector:nth-of-type(5) { top: 280px; left: 62%; width: 90px; }
+    .sd-label:nth-of-type(1) { top: 30px; left: 74%; }
+    .sd-label:nth-of-type(2) { top: 90px; left: 74%; }
+    .sd-label:nth-of-type(3) { top: 150px; left: 74%; }
+    .sd-label:nth-of-type(4) { top: 210px; left: 74%; }
+    .sd-label:nth-of-type(5) { top: 270px; left: 74%; }
   }
 
   @media (max-width: 860px) {
-    .features-grid { grid-template-columns: 1fr 1fr; }
-    .steps-grid { grid-template-columns: 1fr; }
+    .security-diagram { display: none; }
+  }
+
+  /* ---------- Final CTA ---------- */
+
+  .cta-section { position: relative; text-align: center; overflow: hidden; }
+
+  .cta-beam {
+    position: absolute;
+    width: 700px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(94,236,255,0.9), transparent);
+    filter: blur(2px);
+    pointer-events: none;
+  }
+  .cta-beam.b1 { bottom: 40px; left: -220px; transform: rotate(-18deg); opacity: 0.6; }
+  .cta-beam.b2 { bottom: -10px; right: -260px; transform: rotate(14deg); opacity: 0.4; }
+
+  .cta-box { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+  .cta-box h2 { font-size: clamp(1.8rem, 3.6vw, 2.5rem); margin: 0 0 14px; font-weight: 760; text-wrap: balance; }
+  .cta-box p.lead { color: var(--muted); margin: 0 0 30px; line-height: 1.6; }
+  .cta-box .hero-note { justify-content: center; margin-top: 20px; }
+
+  /* ---------- Footer ---------- */
+
+  footer { border-top: 1px solid var(--line); padding: 30px 0; }
+  footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 0.82rem; }
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 640ms ease, transform 640ms ease; }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 860px) {
+    .features-grid { grid-template-columns: 1fr; }
     .ai-inner { grid-template-columns: 1fr; gap: 34px; }
-    .mock-grid { grid-template-columns: 1fr 1fr; }
-    .mock-sidebar { display: none; }
-    .mock-charts { grid-template-columns: 1fr; }
-    .module-row { grid-template-columns: 1fr; gap: 6px; }
-    .topbar nav { display: none; }
+    .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+    .security-inner { grid-template-columns: 1fr; gap: 34px; }
+    .topbar nav a:not(.nav-login):not(.btn) { display: none; }
   }
 
   @media (max-width: 560px) {
-    .features-grid { grid-template-columns: 1fr; }
-    .mock-grid { grid-template-columns: 1fr 1fr; }
     section { padding: 64px 0; }
+    .mock-fin-row { flex-direction: column; gap: 10px; }
   }
 </style>
 </head>
@@ -725,66 +644,105 @@
         <span>Nexor</span>
       </div>
       <nav>
-        <a href="#recursos">Recursos</a>
+        <a href="#recursos">Produto</a>
         <a href="#nex-ai">Nex AI</a>
+        <a href="#seguranca">Segurança</a>
         <a href="#whatsapp">WhatsApp</a>
-        <a href="/app" class="btn small">Entrar</a>
+        <a href="/app" class="nav-login">Entrar</a>
+        <a href="/app?signup=1" class="btn cyan small">Solicitar acesso</a>
       </nav>
     </div>
   </header>
 
   <section class="hero">
-    <div class="wrap">
-      <span class="kicker">✦ Organização, financeiro e produtividade com IA</span>
-      <h1>Toda a sua operação num só lugar, com uma IA que executa o que você pede.</h1>
-      <p class="lead">Tarefas, projetos, leads, clientes, financeiro e equipe organizados no Nexor. Peça pro Nex AI criar, calcular, gerar relatório em PDF ou só dar um conselho, em texto e sem enrolação.</p>
-      <div class="hero-actions">
-        <a href="/app?signup=1" class="btn cyan">Solicitar acesso</a>
-        <a href="/app" class="btn">Já tenho conta</a>
+    <div class="wrap hero-inner">
+      <div>
+        <span class="kicker on-dark">Operação conectada</span>
+        <h1>Sua empresa organizada. Sua IA em ação.</h1>
+        <p class="lead">O sistema que conecta tarefas, projetos, clientes e financeiro — com uma IA que entende, decide e executa ao seu lado.</p>
+        <div class="hero-actions">
+          <a href="/app?signup=1" class="btn cyan">Solicitar acesso <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg></a>
+          <a href="#nex-ai" class="btn">Ver o Nex AI <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg></a>
+        </div>
+        <div class="hero-note">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m8.5 12.2 2.2 2.3 4.8-5"></path></svg>
+          Acesso liberado após aprovação do administrador, sem cadastro de cartão.
+        </div>
       </div>
-      <p class="hero-note">Acesso liberado após aprovação do administrador, sem cadastro de cartão.</p>
 
-      <div class="mock">
-        <div class="mock-bar"><span></span><span></span><span></span></div>
-        <div class="mock-body">
-          <aside class="mock-sidebar">
-            <div class="mock-brand"><img src="/nexor-mark-transparent.png" alt="" /><span>Nexor</span></div>
-            <div class="mock-nav-group">
-              <span class="mock-nav-label">Visão geral</span>
-              <div class="mock-nav-item active">Dashboard</div>
-            </div>
-            <div class="mock-nav-group">
-              <span class="mock-nav-label">Trabalho</span>
-              <div class="mock-nav-item">Tarefas</div>
-              <div class="mock-nav-item">Projetos</div>
-              <div class="mock-nav-item">Agenda</div>
-            </div>
-            <div class="mock-nav-group">
-              <span class="mock-nav-label">Financeiro</span>
-              <div class="mock-nav-item">Financeiro</div>
-            </div>
-          </aside>
-          <div class="mock-main">
-            <div class="mock-topbar"><div class="mock-search"></div></div>
-            <div class="mock-grid">
-              <div class="mock-card"><div class="label">Prioridades</div><div class="value">6</div><div class="delta">2 atrasadas</div></div>
-              <div class="mock-card"><div class="label">Hoje</div><div class="value">3</div><div class="delta">Quarta-feira</div></div>
-              <div class="mock-card"><div class="label">Hábitos</div><div class="value">4/5</div><div class="delta">concluídos hoje</div></div>
-              <div class="mock-card"><div class="label">Saldo previsto</div><div class="value">R$ 4.680</div><div class="delta">receita e despesa</div></div>
-            </div>
-            <div class="mock-charts">
-              <div class="mock-chart-card">
-                <div class="mock-chart-label">Pulso da semana</div>
-                <svg viewBox="0 0 200 60" class="mock-line" preserveAspectRatio="none">
-                  <polyline points="0,45 28,38 56,42 84,22 112,28 140,12 168,18 196,8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </div>
-              <div class="mock-donut-card">
-                <div class="mock-chart-label">Leads por origem</div>
-                <div class="mock-donut"></div>
-              </div>
-            </div>
+      <div class="mock reveal">
+        <div class="mock-command">
+          <span class="mock-command-icon">N</span>
+          <span>O que você precisa gerar ou executar?</span>
+          <span class="mock-command-send"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg></span>
+        </div>
+        <div class="mock-panel">
+          <div class="mock-panel-title">Tarefas de hoje</div>
+          <div class="mock-task"><span class="box"></span><span class="name">Reunião com cliente Aurora Studio às 15h</span><span class="chip progress">Em andamento</span></div>
+          <div class="mock-task"><span class="box"></span><span class="name">Aprovar briefing do projeto website</span><span class="chip done">Concluída</span></div>
+          <div class="mock-task"><span class="box"></span><span class="name">Enviar proposta comercial</span><span class="chip scheduled">Programada</span></div>
+        </div>
+        <div class="mock-panel">
+          <div class="mock-panel-title">Projetos em andamento</div>
+          <div class="mock-project">
+            <div class="mock-project-head"><span class="sq" style="background:#5eb2ff"></span><span class="name">Website Aurora Studio</span><span class="stage">Produção</span><span class="pct">65%</span></div>
+            <div class="mock-bar-track"><div class="mock-bar-fill" style="width:65%;background:#5eb2ff"></div></div>
           </div>
+          <div class="mock-project">
+            <div class="mock-project-head"><span class="sq" style="background:#e8c15e"></span><span class="name">Campanha Q3</span><span class="stage">Planejamento</span><span class="pct">35%</span></div>
+            <div class="mock-bar-track"><div class="mock-bar-fill" style="width:35%;background:#e8c15e"></div></div>
+          </div>
+          <div class="mock-project">
+            <div class="mock-project-head"><span class="sq" style="background:#7ee7a8"></span><span class="name">Identidade Visual</span><span class="stage">Entrega</span><span class="pct">90%</span></div>
+            <div class="mock-bar-track"><div class="mock-bar-fill" style="width:90%;background:#7ee7a8"></div></div>
+          </div>
+        </div>
+        <div class="mock-panel">
+          <div class="mock-panel-title-row"><span class="mock-panel-title" style="margin:0">Resumo financeiro</span><span class="mock-select">Este mês</span></div>
+          <div class="mock-fin-row">
+            <div><span class="label">Receitas</span><span class="value">R$ 12.400,00</span></div>
+            <div><span class="label">Despesas</span><span class="value">R$ 5.180,00</span></div>
+            <div><span class="label">Saldo</span><span class="value cyan">R$ 7.220,00</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="flow-section">
+    <div class="wrap">
+      <div class="flow-eyebrow reveal">
+        <span class="kicker on-dark">Do comando ao resultado</span>
+      </div>
+      <div class="flow-row reveal">
+        <div class="flow-step">
+          <div class="flow-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+          <h3>Você pede</h3>
+          <p>Por texto, no jeito que fala.</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4"></path><path d="M12 17v4"></path><path d="M3 12h4"></path><path d="M17 12h4"></path><path d="m5.6 5.6 2.8 2.8"></path><path d="m15.6 15.6 2.8 2.8"></path><path d="m18.4 5.6-2.8 2.8"></path><path d="m8.4 15.6-2.8 2.8"></path></svg></div>
+          <h3>A IA entende</h3>
+          <p>O contexto do seu negócio.</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-icon"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg></div>
+          <h3>Ela decide</h3>
+          <p>O que fazer e com quem.</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2 2 4-5"></path><rect x="3" y="3" width="18" height="18" rx="3"></rect></svg></div>
+          <h3>Executa</h3>
+          <p>Tarefas, registros e atualizações.</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg></div>
+          <h3>Você acompanha</h3>
+          <p>Tudo em tempo real, sem esforço.</p>
         </div>
       </div>
     </div>
@@ -793,41 +751,121 @@
   <section id="recursos">
     <div class="wrap">
       <div class="section-head reveal">
-        <div class="eyebrow">O que tem dentro</div>
-        <h2>Um sistema, todas as frentes do negócio</h2>
-        <p>Cada módulo já nasce conectado aos outros: uma tarefa vira lançamento financeiro, um lead vira cliente, um hábito vira rotina acompanhada.</p>
+        <div class="eyebrow">Três operações. Um só sistema.</div>
+        <h2>Tarefas, clientes e financeiro trabalhando juntos.</h2>
       </div>
       <div class="features-grid">
         <div class="feature-card reveal">
-          <div class="icon-dot">✓</div>
-          <h3>Tarefas, Kanban e Agenda</h3>
-          <p>Prioridades do dia, quadro Kanban, planner semanal, Matriz de Eisenhower e integração de um clique com o Google Agenda.</p>
+          <div class="icon-dot"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2 2 4-5"></path><rect x="3" y="3" width="18" height="18" rx="3"></rect></svg></div>
+          <h3>Tarefas e projetos no ritmo certo</h3>
+          <p>Organize o dia, planeje com Kanban e Agenda, acompanhe hábitos e a produção da equipe.</p>
+          <div class="mini mini-kanban">
+            <div>
+              <div class="col-label"><span>A fazer</span><span>3</span></div>
+              <div class="card">Briefing campanha Q3<div class="avatars"><span></span><span></span></div></div>
+              <div class="card">Revisão de conteúdo<div class="avatars"><span></span></div></div>
+            </div>
+            <div>
+              <div class="col-label"><span>Em andamento</span><span>2</span></div>
+              <div class="card">Layout do site<div class="avatars"><span></span><span></span></div></div>
+              <div class="card">Configurar integrações<div class="avatars"><span></span></div></div>
+            </div>
+            <div>
+              <div class="col-label"><span>Concluídos</span><span>2</span></div>
+              <div class="card">Proposta comercial<div class="avatars"><span></span></div></div>
+              <div class="card">Entrega do projeto<div class="avatars"><span></span><span></span></div></div>
+            </div>
+          </div>
         </div>
+
         <div class="feature-card reveal">
-          <div class="icon-dot">◎</div>
-          <h3>Leads e Clientes</h3>
-          <p>Funil comercial por estágio, cadastro de clientes, histórico de contato e vínculo direto com projetos e financeiro.</p>
+          <div class="icon-dot"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+          <h3>Clientes centralizados, relacionamentos fortes</h3>
+          <p>Histórico completo, contatos diretos, propostas, contratos e comunicação em um só lugar.</p>
+          <div class="mini mini-client">
+            <div class="mc-head"><strong>Aurora Studio</strong><span class="mc-tag">Cliente ativo</span></div>
+            <div class="mc-row"><span>Contato principal</span><span>Marina Lopes</span></div>
+            <div class="mc-row"><span>E-mail</span><span>marina@aurorastudio.com</span></div>
+            <div class="mc-row"><span>Projetos ativos</span><span>Website, Campanha Q3</span></div>
+            <div class="mc-row"><span>Último contato</span><span>Hoje, 10:32</span></div>
+            <div class="mc-row"><span>Próxima ação</span><span>Enviar relatório mensal</span></div>
+          </div>
         </div>
+
         <div class="feature-card reveal">
-          <div class="icon-dot">$</div>
-          <h3>Financeiro</h3>
-          <p>Receitas, despesas, contas a pagar e receber, despesas por categoria e previsão de saldo dos próximos 30 dias.</p>
+          <div class="icon-dot"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H5a2 2 0 0 1 0-4h12"></path><path d="M5 7h15v14H5a2 2 0 0 1-2-2V5"></path><path d="M16 14h.01"></path></svg></div>
+          <h3>Financeiro claro, sempre atual</h3>
+          <p>Receitas, despesas, categorias e previsões. Organização que vira previsibilidade.</p>
+          <div class="mini mini-chart">
+            <div class="mc-title"><span>Fluxo de caixa</span><span>Últimos 30 dias</span></div>
+            <div class="bars">
+              <div class="b rev" style="height:55%"></div>
+              <div class="b exp" style="height:30%"></div>
+              <div class="b rev" style="height:70%"></div>
+              <div class="b exp" style="height:22%"></div>
+              <div class="b rev" style="height:45%"></div>
+              <div class="b exp" style="height:35%"></div>
+              <div class="b rev" style="height:80%"></div>
+              <div class="b exp" style="height:18%"></div>
+              <div class="b rev" style="height:60%"></div>
+              <div class="b exp" style="height:28%"></div>
+            </div>
+            <div class="legend"><span><i style="background:rgba(94,236,255,0.55)"></i>Receitas</span><span><i style="background:rgba(255,255,255,0.16)"></i>Despesas</span></div>
+            <div class="total">Saldo do período<b>R$ 7.220,00</b></div>
+          </div>
         </div>
-        <div class="feature-card reveal">
-          <div class="icon-dot">↻</div>
-          <h3>Hábitos e rotina</h3>
-          <p>Acompanhamento diário de hábitos, sequência (streak) e progresso, pessoal ou da equipe.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="icon-dot">▤</div>
-          <h3>Produção e Projetos</h3>
-          <p>Demandas criativas com captação, edição, aprovação e entrega, além de projetos com orçamento e progresso.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="icon-dot">⚭</div>
-          <h3>Equipe e Relatórios</h3>
-          <p>Cadastro de funcionários, controle de acesso por perfil e relatórios de produtividade, atrasos e lucro.</p>
-        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="seguranca" class="security-section">
+    <div class="wrap security-inner">
+      <div class="reveal">
+        <div class="security-lock"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+        <h2>Segurança que você consegue entender.</h2>
+        <p>Seus dados e os da sua empresa são seus. Ponto final. A Nexor protege com camadas simples e eficazes para que você trabalhe com tranquilidade.</p>
+        <ul class="security-list">
+          <li>
+            <div class="sec-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+            <div><strong>Acesso autenticado</strong><span>Você entra com sua conta e só acessa o que é seu.</span></div>
+          </li>
+          <li>
+            <div class="sec-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+            <div><strong>Permissões por perfil</strong><span>Cada pessoa vê e faz apenas o que deve.</span></div>
+          </li>
+          <li>
+            <div class="sec-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"></path><path d="m9.5 12 2 2 3.5-4"></path></svg></div>
+            <div><strong>Conexão protegida</strong><span>Seus dados trafegam criptografados.</span></div>
+          </li>
+          <li>
+            <div class="sec-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></div>
+            <div><strong>Isolamento entre empresas</strong><span>Cada negócio é separado dos demais.</span></div>
+          </li>
+          <li>
+            <div class="sec-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10"></path><path d="M4 12h16"></path><path d="M4 18h7"></path><circle cx="16" cy="6" r="2"></circle><circle cx="9" cy="18" r="2"></circle></svg></div>
+            <div><strong>Controle sobre seus dados</strong><span>Você decide exportar ou revisar quando quiser.</span></div>
+          </li>
+        </ul>
+        <span class="security-pill">Seus dados não são usados para publicidade.</span>
+      </div>
+
+      <div class="security-diagram reveal">
+        <div class="sd-shield"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"></path></svg></div>
+        <div class="sd-layer"></div>
+        <div class="sd-layer"></div>
+        <div class="sd-layer"></div>
+        <div class="sd-layer"></div>
+        <div class="sd-layer"></div>
+        <div class="sd-connector"></div>
+        <div class="sd-connector"></div>
+        <div class="sd-connector"></div>
+        <div class="sd-connector"></div>
+        <div class="sd-connector"></div>
+        <div class="sd-label"><strong>Você e sua equipe</strong><span>Acesso autenticado</span></div>
+        <div class="sd-label"><strong>Permissões por perfil</strong><span>Regras de acesso</span></div>
+        <div class="sd-label"><strong>Conexão protegida</strong><span>Criptografia ponta a ponta</span></div>
+        <div class="sd-label"><strong>Isolamento entre empresas</strong><span>Ambientes separados</span></div>
+        <div class="sd-label"><strong>Seus dados</strong><span>Você controla e exporta</span></div>
       </div>
     </div>
   </section>
@@ -858,91 +896,61 @@
 
   <section id="whatsapp" class="ai-section">
     <div class="wrap ai-inner">
-      <div class="ai-chat-mock reveal">
-        <div class="chat-head"><img src="/nex-ai-badge.svg" alt="" /> Nex AI · WhatsApp</div>
-        <div class="bubble user">reunião com cliente sexta às 15h</div>
-        <div class="bubble ai">✅ Tarefa criada: reunião com cliente — 25/07 15:00</div>
-        <div class="bubble user">quanto já recebi esse mês?</div>
-        <div class="bubble ai">Você já recebeu R$ 8.400,00 em receitas pagas nesse mês, principalmente do cliente Aurora Studio.</div>
-      </div>
       <div class="reveal">
-        <img src="/nex-ai-badge.svg" alt="Nex AI" class="ai-badge" />
-        <h2>O Nex AI também mora no seu WhatsApp.</h2>
-        <p class="lead">Vincule seu número no Nexor e converse com o Nex AI direto pelo WhatsApp, sem abrir o app. Ele cria, calcula e responde do mesmo jeito que no site.</p>
-        <ul class="ai-list">
-          <li><div><strong>Cria pelo WhatsApp</strong><span>Manda uma mensagem de texto e ele cria tarefas, hábitos, leads e lançamentos financeiros na hora.</span></div></li>
-          <li><div><strong>Responde sobre seus dados</strong><span>Pergunte o que quiser sobre seu financeiro, tarefas ou leads e receba a resposta na mesma conversa.</span></div></li>
-          <li><div><strong>Bate papo quando precisar</strong><span>Peça um conselho, uma ideia ou ajuda com qualquer assunto: é o mesmo Nex AI, agora no seu bolso.</span></div></li>
+        <span class="kicker on-dark">No WhatsApp, do seu jeito</span>
+        <h2>Converse com o Nex AI direto no WhatsApp.</h2>
+        <p class="lead" style="max-width:460px;color:var(--muted);margin:0 0 26px;line-height:1.6">Peça relatórios, atualize tarefas, registre informações e tome decisões sem sair da conversa.</p>
+        <ul class="ai-check-list">
+          <li><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg> Comandos em texto livre</li>
+          <li><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg> Respostas rápidas e objetivas</li>
+          <li><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg> Ações executadas na hora</li>
         </ul>
-        <a href="/app?signup=1" class="btn cyan">Solicitar acesso</a>
+        <a href="/app?signup=1" class="btn whatsapp"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.39 1.26 4.81L2 22l5.42-1.36a9.86 9.86 0 0 0 4.62 1.15h.01c5.46 0 9.9-4.45 9.9-9.9 0-2.65-1.03-5.13-2.9-6.99A9.82 9.82 0 0 0 12.04 2z"></path></svg> Conectar WhatsApp</a>
       </div>
-    </div>
-  </section>
 
-  <section>
-    <div class="wrap">
-      <div class="section-head reveal">
-        <div class="eyebrow">Como funciona</div>
-        <h2>Do pedido de acesso ao primeiro login</h2>
-        <p>Sem burocracia, sem cadastro de cartão: três passos e você já está organizando tudo.</p>
-      </div>
-      <div class="steps-grid">
-        <div class="step-card reveal">
-          <div class="step-number">Solicite acesso</div>
-          <h3>Preencha seus dados</h3>
-          <p>Nome do negócio, responsável e uma foto. Leva menos de um minuto.</p>
+      <div class="wa-mock reveal">
+        <div class="wa-head">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)"><path d="m15 18-6-6 6-6"></path></svg>
+          <img src="/nex-ai-badge.svg" alt="" />
+          <div class="who"><strong>Nex AI</strong><span>online</span></div>
+          <div class="wa-icons">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.9.66 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.31 1.85.53 2.81.66A2 2 0 0 1 22 16.92z"></path></svg>
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+          </div>
         </div>
-        <div class="step-card reveal">
-          <div class="step-number">Aprovação</div>
-          <h3>Receba login e senha por e-mail</h3>
-          <p>O administrador aprova e uma senha provisória chega no seu e-mail na hora, sem demora.</p>
+        <div class="wa-body">
+          <div class="wa-bubble out">emitir relatório dos meus gastos do mês passado<span class="wa-time">10:52 <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m2 13 5 5L18 7"></path><path d="m9 13 5 5L25 7"></path></svg></span></div>
+          <div class="wa-bubble in">Relatório financeiro gerado: 01/06 a 30/06. Receita R$ 12.400,00, despesa R$ 5.180,00, saldo R$ 7.220,00.<span class="wa-time">10:52</span></div>
+          <div class="wa-bubble out">quanto vou receber essa semana?<span class="wa-time">10:53 <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m2 13 5 5L18 7"></path><path d="m9 13 5 5L25 7"></path></svg></span></div>
+          <div class="wa-bubble in">Você tem R$ 1.850,00 em receitas pendentes com vencimento nos próximos 7 dias, principalmente do cliente Aurora Studio.<span class="wa-time">10:53</span></div>
         </div>
-        <div class="step-card reveal">
-          <div class="step-number">Comece a usar</div>
-          <h3>Organize com o Nexor e o Nex AI</h3>
-          <p>Entre, troque sua senha se quiser, e já pode pedir pro Nex AI criar sua primeira tarefa.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <div class="section-head reveal">
-        <div class="eyebrow">Como é organizado</div>
-        <h2>Tudo agrupado do jeito que você trabalha</h2>
-      </div>
-      <div class="modules-list reveal">
-        <div class="module-row">
-          <div class="group-tag">Visão geral</div>
-          <div class="items"><span>Dashboard</span></div>
-        </div>
-        <div class="module-row">
-          <div class="group-tag">Trabalho</div>
-          <div class="items"><span>Tarefas</span><span>Projetos</span><span>Kanban</span><span>Agenda</span><span>Matriz de Eisenhower</span><span>Produção</span><span>Hábitos</span></div>
-        </div>
-        <div class="module-row">
-          <div class="group-tag">Comercial</div>
-          <div class="items"><span>Leads</span><span>Clientes</span></div>
-        </div>
-        <div class="module-row">
-          <div class="group-tag">Financeiro</div>
-          <div class="items"><span>Receitas e despesas</span><span>Previsão de saldo</span></div>
-        </div>
-        <div class="module-row">
-          <div class="group-tag">Gestão</div>
-          <div class="items"><span>Usuários / acessos</span><span>Equipe</span><span>Relatórios</span></div>
+        <div class="wa-input">
+          <div class="wa-icons-row">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><path d="M9 9h.01"></path><path d="M15 9h.01"></path></svg>
+          </div>
+          <div class="field">Mensagem</div>
+          <div class="wa-icons-row">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div>
+          <div class="send"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg></div>
         </div>
       </div>
     </div>
   </section>
 
   <section class="cta-section">
+    <div class="cta-beam b1"></div>
+    <div class="cta-beam b2"></div>
     <div class="wrap">
       <div class="cta-box reveal">
-        <h2>Pronto pra organizar tudo num lugar só?</h2>
-        <p>Preencha a solicitação de acesso: o administrador aprova e você recebe login e senha por e-mail na hora.</p>
-        <a href="/app?signup=1" class="btn cyan">Solicitar acesso</a>
+        <h2>Tudo o que sua operação precisa. Com uma IA que realmente executa.</h2>
+        <p class="lead">Menos planilhas. Menos retrabalho. Mais resultado.</p>
+        <a href="/app?signup=1" class="btn cyan">Solicitar acesso <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg></a>
+        <div class="hero-note">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m8.5 12.2 2.2 2.3 4.8-5"></path></svg>
+          Acesso liberado após aprovação do administrador, sem cadastro de cartão.
+        </div>
       </div>
     </div>
   </section>
@@ -976,8 +984,8 @@
       });
     });
 
-    function animateChatMock(mock) {
-      const bubbles = Array.from(mock.querySelectorAll(".bubble"));
+    function animateChatMock(mock, bubbleSelector) {
+      const bubbles = Array.from(mock.querySelectorAll(bubbleSelector));
       if (!bubbles.length) return;
       let index = 0;
       let timer = null;
@@ -992,10 +1000,19 @@
           return;
         }
         const bubble = bubbles[index];
-        if (bubble.classList.contains("ai")) {
+        const isReply = bubble.classList.contains("ai") || bubble.classList.contains("in");
+        if (isReply) {
           const typing = document.createElement("div");
-          typing.className = "bubble ai typing show";
-          typing.innerHTML = "<span></span><span></span><span></span>";
+          typing.className = bubble.classList.contains("in") ? "wa-bubble in show" : "bubble ai typing show";
+          if (bubble.classList.contains("in")) {
+            typing.innerHTML = "<span></span><span></span><span></span>";
+            typing.style.display = "flex";
+            typing.style.gap = "4px";
+            typing.style.width = "44px";
+            typing.style.padding = "10px 12px";
+          } else {
+            typing.innerHTML = "<span></span><span></span><span></span>";
+          }
           bubble.before(typing);
           timer = setTimeout(() => {
             typing.remove();
@@ -1016,13 +1033,18 @@
     const chatObserver = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          animateChatMock(entry.target);
-          chatObserver.unobserve(entry.target);
+          const el = entry.target;
+          if (el.classList.contains("wa-mock")) {
+            animateChatMock(el, ".wa-bubble");
+          } else {
+            animateChatMock(el, ".bubble");
+          }
+          chatObserver.unobserve(el);
         }
       });
     }, { threshold: 0.3 });
 
-    document.querySelectorAll(".ai-chat-mock").forEach(mock => chatObserver.observe(mock));
+    document.querySelectorAll(".ai-chat-mock, .wa-mock").forEach(mock => chatObserver.observe(mock));
   </script>
 </body>
 </html>
