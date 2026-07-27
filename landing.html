@@ -83,6 +83,38 @@
   .topbar nav .nav-login { color: var(--muted); text-decoration: none; }
   .topbar nav .nav-login:hover { color: var(--text); }
 
+  .menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+  .menu-toggle svg.ico { width: 19px; height: 19px; }
+
+  .mobile-menu {
+    display: none;
+    flex-direction: column;
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+    padding: 6px 22px 18px;
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a {
+    padding: 13px 2px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.92rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .mobile-menu a:last-of-type { border-bottom: none; }
+  .mobile-menu .btn { margin-top: 14px; justify-content: center; }
+
   .btn {
     display: inline-flex;
     align-items: center;
@@ -134,7 +166,6 @@
   }
 
   .kicker.on-dark { color: var(--cyan); }
-  .kicker.on-light { color: #0a7d8c; }
 
   /* ---------- Hero ---------- */
 
@@ -311,42 +342,6 @@
   .mock-fin-row .value { display: block; font-size: 1rem; font-weight: 700; }
   .mock-fin-row .value.cyan { color: var(--cyan); }
 
-  /* ---------- Process flow ---------- */
-
-  .flow-section { background: #050505; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-
-  .flow-eyebrow { text-align: center; }
-
-  .flow-row {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 40px;
-    flex-wrap: wrap;
-  }
-
-  .flow-step { display: flex; flex-direction: column; align-items: center; text-align: center; width: 168px; }
-
-  .flow-icon {
-    width: 52px; height: 52px; border-radius: 14px;
-    display: grid; place-items: center;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--line);
-    margin-bottom: 14px;
-    color: var(--cyan);
-  }
-
-  .flow-icon svg.ico { width: 22px; height: 22px; }
-  .flow-step h3 { margin: 0 0 6px; font-size: 0.92rem; font-family: var(--font); font-weight: 600; }
-  .flow-step p { margin: 0; font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
-
-  .flow-arrow { color: var(--line); font-size: 1.2rem; padding-top: 16px; flex: 0 0 auto; }
-
-  @media (max-width: 900px) {
-    .flow-arrow { display: none; }
-  }
-
   /* ---------- Section heads / cards ---------- */
 
   .section-head { text-align: center; max-width: 620px; margin: 0 auto 46px; }
@@ -422,6 +417,34 @@
   .mini-chart .legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
   .mini-chart .total { margin-top: 10px; color: var(--muted); }
   .mini-chart .total b { display: block; color: var(--text); font-size: 0.86rem; margin-top: 2px; }
+
+  .also-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 40px;
+    padding-top: 34px;
+    border-top: 1px solid var(--line);
+  }
+
+  .also-item { display: flex; gap: 12px; align-items: flex-start; }
+  .also-icon {
+    width: 34px; height: 34px; border-radius: 9px; flex: 0 0 auto;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--cyan) 8%, transparent);
+    color: var(--cyan);
+    border: 1px solid var(--line);
+  }
+  .also-icon svg.ico { width: 16px; height: 16px; }
+  .also-item strong { display: block; font-size: 0.88rem; margin-bottom: 2px; }
+  .also-item span { display: block; color: var(--muted); font-size: 0.78rem; line-height: 1.45; }
+
+  @media (max-width: 860px) {
+    .also-row { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    .also-row { grid-template-columns: 1fr; }
+  }
 
   /* ---------- Nex AI / WhatsApp shared ---------- */
 
@@ -639,6 +662,36 @@
   .sec-body strong { display: block; font-size: 0.98rem; margin-bottom: 4px; }
   .sec-body span { display: block; font-size: 0.85rem; color: #6b6b64; line-height: 1.5; }
 
+  /* ---------- FAQ ---------- */
+
+  .faq-list { max-width: 720px; margin: 0 auto; display: grid; gap: 10px; }
+
+  .faq-item {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--panel);
+    padding: 4px 20px;
+  }
+
+  .faq-item summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+    font-weight: 600;
+    font-size: 0.94rem;
+    cursor: pointer;
+  }
+
+  .faq-item summary::-webkit-details-marker { display: none; }
+
+  .faq-toggle { color: var(--cyan); font-size: 1.1rem; flex: 0 0 auto; transition: transform 200ms ease; }
+  .faq-item[open] .faq-toggle { transform: rotate(45deg); }
+
+  .faq-item p { margin: 0 0 18px; color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
+
   /* ---------- Final CTA ---------- */
 
   .cta-section { position: relative; text-align: center; overflow: hidden; }
@@ -673,6 +726,11 @@
     .hero-inner { grid-template-columns: 1fr; gap: 40px; }
     .security-inner { grid-template-columns: 1fr; gap: 34px; }
     .topbar nav a:not(.nav-login):not(.btn) { display: none; }
+    .menu-toggle { display: inline-flex; }
+  }
+
+  @media (min-width: 861px) {
+    .mobile-menu { display: none !important; }
   }
 
   @media (max-width: 560px) {
@@ -695,9 +753,23 @@
         <a href="#nex-ai">Nex AI</a>
         <a href="#seguranca">Segurança</a>
         <a href="#whatsapp">WhatsApp</a>
+        <a href="#faq">FAQ</a>
         <a href="/app" class="nav-login">Entrar</a>
         <a href="/app?signup=1" class="btn cyan small">Solicitar acesso</a>
       </nav>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#recursos">Produto</a>
+      <a href="#planos">Planos</a>
+      <a href="#nex-ai">Nex AI</a>
+      <a href="#seguranca">Segurança</a>
+      <a href="#whatsapp">WhatsApp</a>
+      <a href="#faq">FAQ</a>
+      <a href="/app">Entrar</a>
+      <a href="/app?signup=1" class="btn cyan">Solicitar acesso</a>
     </div>
   </header>
 
@@ -751,45 +823,6 @@
             <div><span class="label">Despesas</span><span class="value">R$ 5.180,00</span></div>
             <div><span class="label">Saldo</span><span class="value cyan">R$ 7.220,00</span></div>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="flow-section">
-    <div class="wrap">
-      <div class="flow-eyebrow reveal">
-        <span class="kicker on-dark">Do comando ao resultado</span>
-      </div>
-      <div class="flow-row reveal">
-        <div class="flow-step">
-          <div class="flow-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
-          <h3>Você pede</h3>
-          <p>Por texto, no jeito que fala.</p>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">
-          <div class="flow-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4"></path><path d="M12 17v4"></path><path d="M3 12h4"></path><path d="M17 12h4"></path><path d="m5.6 5.6 2.8 2.8"></path><path d="m15.6 15.6 2.8 2.8"></path><path d="m18.4 5.6-2.8 2.8"></path><path d="m8.4 15.6-2.8 2.8"></path></svg></div>
-          <h3>A IA entende</h3>
-          <p>O contexto do seu negócio.</p>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">
-          <div class="flow-icon"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg></div>
-          <h3>Ela decide</h3>
-          <p>O que fazer e com quem.</p>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">
-          <div class="flow-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2 2 4-5"></path><rect x="3" y="3" width="18" height="18" rx="3"></rect></svg></div>
-          <h3>Executa</h3>
-          <p>Tarefas, registros e atualizações.</p>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">
-          <div class="flow-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg></div>
-          <h3>Você acompanha</h3>
-          <p>Tudo em tempo real, sem esforço.</p>
         </div>
       </div>
     </div>
@@ -860,6 +893,25 @@
             <div class="legend"><span><i style="background:rgba(94,236,255,0.55)"></i>Receitas</span><span><i style="background:rgba(255,255,255,0.16)"></i>Despesas</span></div>
             <div class="total">Saldo do período<b>R$ 7.220,00</b></div>
           </div>
+        </div>
+      </div>
+
+      <div class="also-row reveal">
+        <div class="also-item">
+          <div class="also-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.6"></circle></svg></div>
+          <div><strong>Leads</strong><span>Funil comercial por estágio, até virar cliente.</span></div>
+        </div>
+        <div class="also-item">
+          <div class="also-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="M4 11 6 5h12l2 6"></path><path d="m8 5 4 6"></path><path d="m14 5 4 6"></path></svg></div>
+          <div><strong>Produção de conteúdo</strong><span>Captação, edição, aprovação e entrega.</span></div>
+        </div>
+        <div class="also-item">
+          <div class="also-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></div>
+          <div><strong>Hábitos</strong><span>Sequência e progresso, pessoal ou da equipe.</span></div>
+        </div>
+        <div class="also-item">
+          <div class="also-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+          <div><strong>Equipe</strong><span>Acessos por perfil e relatórios de produtividade.</span></div>
         </div>
       </div>
     </div>
@@ -1039,6 +1091,37 @@
     </div>
   </section>
 
+  <section id="faq">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Perguntas frequentes</div>
+        <h2>Antes de solicitar acesso</h2>
+      </div>
+      <div class="faq-list reveal">
+        <details class="faq-item">
+          <summary>Posso trocar de plano depois?<span class="faq-toggle">+</span></summary>
+          <p>Sim. O administrador pode alterar seu plano a qualquer momento, direto na conta.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Como funciona a aprovação de acesso?<span class="faq-toggle">+</span></summary>
+          <p>Você solicita acesso, escolhe o plano e paga por PIX ou cartão. Assim que o pagamento é confirmado, sua conta é criada e a senha chega por e-mail na hora, sem espera manual.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Meus dados ficam seguros?<span class="faq-toggle">+</span></summary>
+          <p>Sim. Acesso autenticado, permissões por perfil, conexão criptografada e isolamento entre empresas — veja mais na seção Segurança acima. Seus dados nunca são usados para publicidade.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Preciso instalar alguma coisa?<span class="faq-toggle">+</span></summary>
+          <p>Não. O Nexor roda inteiro no navegador, sem instalação, e o Nex AI também funciona pelo WhatsApp.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Posso cancelar quando quiser?<span class="faq-toggle">+</span></summary>
+          <p>Sim, sem fidelidade e sem multa.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
   <section class="cta-section">
     <div class="cta-beam b1"></div>
     <div class="cta-beam b2"></div>
@@ -1064,6 +1147,17 @@
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    const menuToggle = document.getElementById("menuToggle");
+    const mobileMenu = document.getElementById("mobileMenu");
+    menuToggle?.addEventListener("click", () => {
+      const isOpen = mobileMenu.classList.toggle("open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+    mobileMenu?.querySelectorAll("a").forEach(link => link.addEventListener("click", () => {
+      mobileMenu.classList.remove("open");
+      menuToggle.setAttribute("aria-expanded", "false");
+    }));
 
     const revealObserver = new IntersectionObserver(entries => {
       entries.forEach(entry => {
