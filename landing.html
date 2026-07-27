@@ -535,106 +535,53 @@
     color: #3a3a35;
   }
 
-  .security-diagram { position: relative; height: 420px; }
+  .security-diagram { padding-top: 4px; }
 
-  .sd-layer {
-    position: absolute;
-    left: 50%;
-    width: 260px;
-    height: 122px;
-    transform: translateX(-50%);
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-    background: linear-gradient(160deg, rgba(20,179,198,0.75), rgba(10,125,140,0.4));
-    filter:
-      drop-shadow(0 3px 4px rgba(10,125,140,0.18))
-      drop-shadow(0 22px 26px rgba(10,125,140,0.16));
+  .sec-item {
+    display: flex;
+    gap: 18px;
+    position: relative;
+    padding-bottom: 34px;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 560ms ease, transform 560ms ease;
   }
 
-  .sd-layer-fill {
-    position: absolute;
-    inset: 3px;
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-    background: linear-gradient(155deg, #ffffff, #eafbfc);
-    overflow: hidden;
-  }
+  .reveal.is-visible .sec-item { opacity: 1; transform: translateY(0); }
+  .reveal.is-visible .sec-item:nth-child(1) { transition-delay: 60ms; }
+  .reveal.is-visible .sec-item:nth-child(2) { transition-delay: 150ms; }
+  .reveal.is-visible .sec-item:nth-child(3) { transition-delay: 240ms; }
+  .reveal.is-visible .sec-item:nth-child(4) { transition-delay: 330ms; }
+  .reveal.is-visible .sec-item:nth-child(5) { transition-delay: 420ms; }
 
-  .sd-glow {
-    position: absolute;
-    inset: -10%;
-    background: radial-gradient(circle, rgba(94,236,255,0.42), transparent 68%);
-    filter: blur(10px);
-  }
+  .sec-item:last-child { padding-bottom: 0; }
 
-  .sd-layer.d1 { top: 0; }
-  .sd-layer.d2 { top: 60px; }
-  .sd-layer.d3 { top: 120px; }
-  .sd-layer.d4 { top: 180px; }
-  .sd-layer.d5 { top: 240px; }
+  .sec-rail { position: relative; flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; }
 
-  .sd-shield {
-    position: absolute;
-    top: -22px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 56px; height: 56px;
-    border-radius: 15px;
+  .sec-node {
+    width: 46px; height: 46px; border-radius: 50%;
     background: linear-gradient(135deg, #0a7d8c, #14b3c6);
-    display: grid;
-    place-items: center;
+    display: grid; place-items: center;
     color: #fff;
-    box-shadow: 0 16px 28px rgba(10,125,140,0.4), 0 2px 0 rgba(255,255,255,0.25) inset;
-    z-index: 2;
+    box-shadow: 0 10px 22px rgba(10,125,140,0.32), 0 1.5px 0 rgba(255,255,255,0.3) inset;
+    z-index: 1;
+    flex: 0 0 auto;
   }
-  .sd-shield svg.ico { width: 25px; height: 25px; }
+  .sec-node svg.ico { width: 20px; height: 20px; }
 
-  .sd-connector { position: absolute; height: 1px; background: linear-gradient(90deg, rgba(10,125,140,0.5), rgba(10,125,140,0.25)); }
-  .sd-connector::before, .sd-connector::after {
+  .sec-rail::after {
     content: "";
     position: absolute;
-    top: 50%;
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: #0a7d8c;
-    transform: translateY(-50%);
+    top: 46px;
+    bottom: -34px;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(10,125,140,0.35), rgba(10,125,140,0.08));
   }
-  .sd-connector::before { left: -2.5px; }
-  .sd-connector::after { right: -2.5px; opacity: 0.4; }
-  .sd-label { position: absolute; font-size: 0.76rem; white-space: nowrap; }
-  .sd-label strong { display: block; font-size: 0.8rem; color: #0d0d0d; }
-  .sd-label span { color: #6b6b64; font-size: 0.72rem; }
+  .sec-item:last-child .sec-rail::after { display: none; }
 
-  @media (min-width: 861px) {
-    .sd-connector { left: 77%; width: 70px; }
-    .sd-connector.c1 { top: 61px; }
-    .sd-connector.c2 { top: 121px; }
-    .sd-connector.c3 { top: 181px; }
-    .sd-connector.c4 { top: 241px; }
-    .sd-connector.c5 { top: 301px; }
-    .sd-label { left: 84%; }
-    .sd-label.l1 { top: 51px; }
-    .sd-label.l2 { top: 111px; }
-    .sd-label.l3 { top: 171px; }
-    .sd-label.l4 { top: 231px; }
-    .sd-label.l5 { top: 291px; }
-  }
-
-  @media (max-width: 860px) {
-    .security-diagram { display: none; }
-  }
-
-  .reveal.is-visible .sd-layer {
-    animation: sdLayerIn 720ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
-  }
-  .reveal.is-visible .sd-layer.d1 { animation-delay: 60ms; }
-  .reveal.is-visible .sd-layer.d2 { animation-delay: 150ms; }
-  .reveal.is-visible .sd-layer.d3 { animation-delay: 240ms; }
-  .reveal.is-visible .sd-layer.d4 { animation-delay: 330ms; }
-  .reveal.is-visible .sd-layer.d5 { animation-delay: 420ms; }
-
-  @keyframes sdLayerIn {
-    from { opacity: 0; transform: translateX(-50%) translateY(-18px) scale(0.9); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-  }
+  .sec-body { padding-top: 9px; }
+  .sec-body strong { display: block; font-size: 0.98rem; margin-bottom: 4px; }
+  .sec-body span { display: block; font-size: 0.85rem; color: #6b6b64; line-height: 1.5; }
 
   /* ---------- Final CTA ---------- */
 
@@ -893,22 +840,26 @@
       </div>
 
       <div class="security-diagram reveal">
-        <div class="sd-shield"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"></path></svg></div>
-        <div class="sd-layer d1"><div class="sd-layer-fill"></div></div>
-        <div class="sd-layer d2"><div class="sd-layer-fill"><div class="sd-glow"></div></div></div>
-        <div class="sd-layer d3"><div class="sd-layer-fill"></div></div>
-        <div class="sd-layer d4"><div class="sd-layer-fill"></div></div>
-        <div class="sd-layer d5"><div class="sd-layer-fill"></div></div>
-        <div class="sd-connector c1"></div>
-        <div class="sd-connector c2"></div>
-        <div class="sd-connector c3"></div>
-        <div class="sd-connector c4"></div>
-        <div class="sd-connector c5"></div>
-        <div class="sd-label l1"><strong>Você e sua equipe</strong><span>Acesso autenticado</span></div>
-        <div class="sd-label l2"><strong>Permissões por perfil</strong><span>Regras de acesso</span></div>
-        <div class="sd-label l3"><strong>Conexão protegida</strong><span>Criptografia ponta a ponta</span></div>
-        <div class="sd-label l4"><strong>Isolamento entre empresas</strong><span>Ambientes separados</span></div>
-        <div class="sd-label l5"><strong>Seus dados</strong><span>Você controla e exporta</span></div>
+        <div class="sec-item">
+          <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div></div>
+          <div class="sec-body"><strong>Acesso autenticado</strong><span>Você entra com sua conta e só acessa o que é seu.</span></div>
+        </div>
+        <div class="sec-item">
+          <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></div></div>
+          <div class="sec-body"><strong>Permissões por perfil</strong><span>Cada pessoa vê e faz apenas o que deve.</span></div>
+        </div>
+        <div class="sec-item">
+          <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"></path></svg></div></div>
+          <div class="sec-body"><strong>Conexão protegida</strong><span>Seus dados trafegam criptografados.</span></div>
+        </div>
+        <div class="sec-item">
+          <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></div></div>
+          <div class="sec-body"><strong>Isolamento entre empresas</strong><span>Cada negócio é separado dos demais.</span></div>
+        </div>
+        <div class="sec-item">
+          <div class="sec-rail"><div class="sec-node"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10"></path><path d="M4 12h16"></path><path d="M4 18h7"></path><circle cx="16" cy="6" r="2"></circle><circle cx="9" cy="18" r="2"></circle></svg></div></div>
+          <div class="sec-body"><strong>Seus dados</strong><span>Você decide exportar ou revisar quando quiser.</span></div>
+        </div>
       </div>
     </div>
   </section>
