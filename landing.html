@@ -495,6 +495,62 @@
   .wa-input .send { width: 34px; height: 34px; border-radius: 50%; background: var(--cyan); color: #001417; display: grid; place-items: center; flex: 0 0 auto; }
   .wa-input .send svg.ico { width: 16px; height: 16px; }
 
+  /* ---------- Planos ---------- */
+
+  .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+
+  .plan-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  }
+
+  .plan-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.22); box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+
+  .plan-card.featured {
+    border-color: rgba(94,236,255,0.4);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--cyan) 6%, var(--panel)), var(--panel));
+    box-shadow: 0 0 40px rgba(94,236,255,0.1);
+  }
+
+  .plan-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #22c9e8, #5eecff);
+    color: #001417;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .plan-name { font-size: 1rem; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+  .plan-card.featured .plan-name { color: var(--cyan); }
+
+  .plan-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 22px; }
+  .plan-price .value { font-family: var(--font-display); font-size: 2.1rem; font-weight: 760; }
+  .plan-price .period { color: var(--muted); font-size: 0.86rem; }
+
+  .plan-features { list-style: none; margin: 0 0 26px; padding: 0; display: grid; gap: 12px; flex: 1; }
+  .plan-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; color: var(--text); line-height: 1.4; }
+  .plan-features li::before { content: "✓"; color: var(--cyan); font-weight: 700; flex: 0 0 auto; }
+  .plan-features li.included-all { color: var(--muted); font-style: italic; }
+  .plan-features li.included-all::before { content: "＋"; color: var(--muted); }
+
+  .plan-card .btn { justify-content: center; }
+
+  @media (max-width: 860px) {
+    .plans-grid { grid-template-columns: 1fr; }
+  }
+
   /* ---------- Security (light) ---------- */
 
   .security-section { background: #f1f1ef; color: #0d0d0d; border-bottom: 1px solid rgba(0,0,0,0.06); }
@@ -635,6 +691,7 @@
       </div>
       <nav>
         <a href="#recursos">Produto</a>
+        <a href="#planos">Planos</a>
         <a href="#nex-ai">Nex AI</a>
         <a href="#seguranca">Segurança</a>
         <a href="#whatsapp">WhatsApp</a>
@@ -808,6 +865,55 @@
     </div>
   </section>
 
+  <section id="planos">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Planos</div>
+        <h2>Comece simples. Cresça quando precisar.</h2>
+        <p>Três planos, sem fidelidade e sem cadastro de cartão pra solicitar acesso.</p>
+      </div>
+      <div class="plans-grid">
+        <div class="plan-card reveal">
+          <div class="plan-name">Básico</div>
+          <div class="plan-price"><span class="value">R$ 30</span><span class="period">/mês</span></div>
+          <ul class="plan-features">
+            <li>Dashboard</li>
+            <li>Tarefas, Kanban e Agenda</li>
+            <li>Clientes</li>
+            <li>Financeiro</li>
+            <li>Hábitos</li>
+            <li>Equipe</li>
+          </ul>
+          <a href="/app?signup=1" class="btn">Começar no Básico</a>
+        </div>
+        <div class="plan-card featured reveal">
+          <div class="plan-badge">Mais escolhido</div>
+          <div class="plan-name">Premium</div>
+          <div class="plan-price"><span class="value">R$ 50</span><span class="period">/mês</span></div>
+          <ul class="plan-features">
+            <li class="included-all">Tudo do Básico</li>
+            <li>Leads (funil comercial)</li>
+            <li>Projetos</li>
+            <li>Produção de conteúdo</li>
+            <li>Nex AI no site</li>
+          </ul>
+          <a href="/app?signup=1" class="btn cyan">Começar no Premium</a>
+        </div>
+        <div class="plan-card reveal">
+          <div class="plan-name">Pro</div>
+          <div class="plan-price"><span class="value">R$ 75</span><span class="period">/mês</span></div>
+          <ul class="plan-features">
+            <li class="included-all">Tudo do Premium</li>
+            <li>Nex AI no WhatsApp</li>
+            <li>Lembrete automático de pagamento</li>
+            <li>Roteiros com IA</li>
+          </ul>
+          <a href="/app?signup=1" class="btn">Começar no Pro</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="seguranca" class="security-section">
     <div class="wrap security-inner">
       <div class="reveal">
@@ -913,9 +1019,9 @@
           </div>
         </div>
         <div class="wa-body">
-          <div class="wa-bubble out">emitir relatório dos meus gastos do mês passado<span class="wa-time">10:52 <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m2 13 5 5L18 7"></path><path d="m9 13 5 5L25 7"></path></svg></span></div>
+          <div class="wa-bubble out">emitir relatório dos meus gastos do mês passado<span class="wa-time">10:52 <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m1 13 4 4L16 6"></path><path d="m7 13 4 4L22 6"></path></svg></span></div>
           <div class="wa-bubble in">Relatório financeiro gerado: 01/06 a 30/06. Receita R$ 12.400,00, despesa R$ 5.180,00, saldo R$ 7.220,00.<span class="wa-time">10:52</span></div>
-          <div class="wa-bubble out">quanto vou receber essa semana?<span class="wa-time">10:53 <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m2 13 5 5L18 7"></path><path d="m9 13 5 5L25 7"></path></svg></span></div>
+          <div class="wa-bubble out">quanto vou receber essa semana?<span class="wa-time">10:53 <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m1 13 4 4L16 6"></path><path d="m7 13 4 4L22 6"></path></svg></span></div>
           <div class="wa-bubble in">Você tem R$ 1.850,00 em receitas pendentes com vencimento nos próximos 7 dias, principalmente do cliente Aurora Studio.<span class="wa-time">10:53</span></div>
         </div>
         <div class="wa-input">
