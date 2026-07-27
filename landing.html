@@ -345,7 +345,8 @@
   /* ---------- Video ---------- */
 
   .video-frame {
-    max-width: 860px;
+    width: fit-content;
+    max-width: 100%;
     margin: 0 auto;
     border-radius: 20px;
     overflow: hidden;
@@ -354,7 +355,17 @@
     background: #000;
   }
 
-  .video-frame video { width: 100%; display: block; }
+  .video-frame video {
+    display: block;
+    height: min(46vh, 420px);
+    max-width: 100%;
+    width: auto;
+    aspect-ratio: 9 / 16;
+  }
+
+  @media (max-width: 640px) {
+    .video-frame video { height: min(42vh, 340px); }
+  }
 
   /* ---------- Section heads / cards ---------- */
 
@@ -401,7 +412,8 @@
   }
 
   .mini-kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .mini-kanban .col-label { color: var(--muted); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 7px; display: flex; justify-content: space-between; }
+  .mini-kanban .col-label { color: var(--muted); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 7px; display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; min-height: 24px; line-height: 1.25; }
+  .mini-kanban .col-label span:first-child { flex: 1; }
   .mini-kanban .card {
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--line);
