@@ -4635,6 +4635,11 @@
       return Object.entries(labels).map(([value, label]) => `<option value="${value}" ${value === selected ? "selected" : ""}>${label}</option>`).join("");
     }
 
+    function planOptions(selected = "basico") {
+      const labels = { basico: "Básico — R$ 30/mês", premium: "Premium — R$ 50/mês", pro: "Pro — R$ 75/mês" };
+      return Object.entries(labels).map(([value, label]) => `<option value="${value}" ${value === selected ? "selected" : ""}>${label}</option>`).join("");
+    }
+
     function clientAccountForm(client = {}) {
       const slug = client.slug || slugify(client.businessName || "");
       return `
@@ -4646,6 +4651,7 @@
           ${field("WhatsApp", "whatsapp", client.whatsapp)}
           ${field("Usuário de acesso", "accessUsername", client.accessUsername, "text", true)}
           ${field("Slug do link", "slug", slug)}
+          <div class="field"><label>Plano</label><select name="plan">${planOptions(client.plan || "basico")}</select></div>
           ${field("Valor mensal", "monthlyValue", client.monthlyValue || 0, "number", true)}
           <div class="field"><label>Status da assinatura</label><select name="subscriptionStatus">${subscriptionOptions(client.subscriptionStatus || "pendente")}</select></div>
           ${field("Data combinada de pagamento", "paymentDueDate", client.paymentDueDate, "date")}
@@ -6488,6 +6494,7 @@
         email,
         whatsapp: String(formData.get("whatsapp") || "").trim(),
         accessUsername,
+        plan: ["basico", "premium", "pro"].includes(formData.get("plan")) ? formData.get("plan") : "basico",
         monthlyValue: Number(formData.get("monthlyValue") || 0),
         subscriptionStatus: String(formData.get("subscriptionStatus") || "pendente"),
         paymentDueDate: String(formData.get("paymentDueDate") || ""),
