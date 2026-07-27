@@ -577,16 +577,18 @@
   .sd-label span { color: #6b6b64; font-size: 0.72rem; }
 
   @media (min-width: 861px) {
-    .sd-connector:nth-of-type(1) { top: 40px; left: 62%; width: 90px; }
-    .sd-connector:nth-of-type(2) { top: 100px; left: 62%; width: 90px; }
-    .sd-connector:nth-of-type(3) { top: 160px; left: 62%; width: 90px; }
-    .sd-connector:nth-of-type(4) { top: 220px; left: 62%; width: 90px; }
-    .sd-connector:nth-of-type(5) { top: 280px; left: 62%; width: 90px; }
-    .sd-label:nth-of-type(1) { top: 30px; left: 74%; }
-    .sd-label:nth-of-type(2) { top: 90px; left: 74%; }
-    .sd-label:nth-of-type(3) { top: 150px; left: 74%; }
-    .sd-label:nth-of-type(4) { top: 210px; left: 74%; }
-    .sd-label:nth-of-type(5) { top: 270px; left: 74%; }
+    .sd-connector { left: 62%; width: 90px; }
+    .sd-connector.c1 { top: 40px; }
+    .sd-connector.c2 { top: 100px; }
+    .sd-connector.c3 { top: 160px; }
+    .sd-connector.c4 { top: 220px; }
+    .sd-connector.c5 { top: 280px; }
+    .sd-label { left: 74%; }
+    .sd-label.l1 { top: 30px; }
+    .sd-label.l2 { top: 90px; }
+    .sd-label.l3 { top: 150px; }
+    .sd-label.l4 { top: 210px; }
+    .sd-label.l5 { top: 270px; }
   }
 
   @media (max-width: 860px) {
@@ -856,16 +858,16 @@
         <div class="sd-layer"></div>
         <div class="sd-layer"></div>
         <div class="sd-layer"></div>
-        <div class="sd-connector"></div>
-        <div class="sd-connector"></div>
-        <div class="sd-connector"></div>
-        <div class="sd-connector"></div>
-        <div class="sd-connector"></div>
-        <div class="sd-label"><strong>Você e sua equipe</strong><span>Acesso autenticado</span></div>
-        <div class="sd-label"><strong>Permissões por perfil</strong><span>Regras de acesso</span></div>
-        <div class="sd-label"><strong>Conexão protegida</strong><span>Criptografia ponta a ponta</span></div>
-        <div class="sd-label"><strong>Isolamento entre empresas</strong><span>Ambientes separados</span></div>
-        <div class="sd-label"><strong>Seus dados</strong><span>Você controla e exporta</span></div>
+        <div class="sd-connector c1"></div>
+        <div class="sd-connector c2"></div>
+        <div class="sd-connector c3"></div>
+        <div class="sd-connector c4"></div>
+        <div class="sd-connector c5"></div>
+        <div class="sd-label l1"><strong>Você e sua equipe</strong><span>Acesso autenticado</span></div>
+        <div class="sd-label l2"><strong>Permissões por perfil</strong><span>Regras de acesso</span></div>
+        <div class="sd-label l3"><strong>Conexão protegida</strong><span>Criptografia ponta a ponta</span></div>
+        <div class="sd-label l4"><strong>Isolamento entre empresas</strong><span>Ambientes separados</span></div>
+        <div class="sd-label l5"><strong>Seus dados</strong><span>Você controla e exporta</span></div>
       </div>
     </div>
   </section>
