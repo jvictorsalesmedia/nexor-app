@@ -541,16 +541,18 @@
     position: absolute;
     left: 50%;
     width: 260px;
-    height: 130px;
+    height: 122px;
     transform: translateX(-50%);
     clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-    background: linear-gradient(160deg, rgba(20,179,198,0.7), rgba(10,125,140,0.45));
-    filter: drop-shadow(0 16px 20px rgba(10,125,140,0.16));
+    background: linear-gradient(160deg, rgba(20,179,198,0.75), rgba(10,125,140,0.4));
+    filter:
+      drop-shadow(0 3px 4px rgba(10,125,140,0.18))
+      drop-shadow(0 22px 26px rgba(10,125,140,0.16));
   }
 
   .sd-layer-fill {
     position: absolute;
-    inset: 2.5px;
+    inset: 3px;
     clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
     background: linear-gradient(155deg, #ffffff, #eafbfc);
     overflow: hidden;
@@ -558,32 +560,32 @@
 
   .sd-glow {
     position: absolute;
-    inset: -25%;
-    background: radial-gradient(circle, rgba(94,236,255,0.6), transparent 62%);
-    filter: blur(4px);
+    inset: -10%;
+    background: radial-gradient(circle, rgba(94,236,255,0.42), transparent 68%);
+    filter: blur(10px);
   }
 
   .sd-layer.d1 { top: 0; }
-  .sd-layer.d2 { top: 54px; }
-  .sd-layer.d3 { top: 108px; }
-  .sd-layer.d4 { top: 162px; }
-  .sd-layer.d5 { top: 216px; }
+  .sd-layer.d2 { top: 60px; }
+  .sd-layer.d3 { top: 120px; }
+  .sd-layer.d4 { top: 180px; }
+  .sd-layer.d5 { top: 240px; }
 
   .sd-shield {
     position: absolute;
-    top: -28px;
+    top: -22px;
     left: 50%;
     transform: translateX(-50%);
-    width: 52px; height: 52px;
-    border-radius: 14px;
+    width: 56px; height: 56px;
+    border-radius: 15px;
     background: linear-gradient(135deg, #0a7d8c, #14b3c6);
     display: grid;
     place-items: center;
     color: #fff;
-    box-shadow: 0 14px 30px rgba(10,125,140,0.35);
+    box-shadow: 0 16px 28px rgba(10,125,140,0.4), 0 2px 0 rgba(255,255,255,0.25) inset;
     z-index: 2;
   }
-  .sd-shield svg.ico { width: 24px; height: 24px; }
+  .sd-shield svg.ico { width: 25px; height: 25px; }
 
   .sd-connector { position: absolute; height: 1px; background: linear-gradient(90deg, rgba(10,125,140,0.5), rgba(10,125,140,0.25)); }
   .sd-connector::before, .sd-connector::after {
@@ -603,17 +605,17 @@
 
   @media (min-width: 861px) {
     .sd-connector { left: 77%; width: 70px; }
-    .sd-connector.c1 { top: 65px; }
-    .sd-connector.c2 { top: 119px; }
-    .sd-connector.c3 { top: 173px; }
-    .sd-connector.c4 { top: 227px; }
-    .sd-connector.c5 { top: 281px; }
+    .sd-connector.c1 { top: 61px; }
+    .sd-connector.c2 { top: 121px; }
+    .sd-connector.c3 { top: 181px; }
+    .sd-connector.c4 { top: 241px; }
+    .sd-connector.c5 { top: 301px; }
     .sd-label { left: 84%; }
-    .sd-label.l1 { top: 55px; }
-    .sd-label.l2 { top: 109px; }
-    .sd-label.l3 { top: 163px; }
-    .sd-label.l4 { top: 217px; }
-    .sd-label.l5 { top: 271px; }
+    .sd-label.l1 { top: 51px; }
+    .sd-label.l2 { top: 111px; }
+    .sd-label.l3 { top: 171px; }
+    .sd-label.l4 { top: 231px; }
+    .sd-label.l5 { top: 291px; }
   }
 
   @media (max-width: 860px) {
