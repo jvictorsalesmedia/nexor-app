@@ -13,12 +13,13 @@
       --text: #f7f7f3;
       --muted: #9d9d9a;
       --line: #2a2a2d;
-      --accent: #ffffff;
+      --accent: #5eecff;
       --accent-2: #bfc3c9;
       --gold: #d8b45f;
       --danger: #ff6b6b;
       --warning: #dda85a;
       --success: #72d49a;
+      --info: #b4a5ff;
       --shadow: 0 24px 70px rgba(0, 0, 0, 0.46);
       --page-base: #030303;
       --page-top: #000000;
@@ -46,12 +47,13 @@
       --text: #0a0a0a;
       --muted: #676764;
       --line: #d8d8d2;
-      --accent: #0a0a0a;
+      --accent: #0e8fac;
       --accent-2: #565b63;
       --gold: #a77b28;
       --danger: #b64242;
       --warning: #b97818;
       --success: #26835b;
+      --info: #6d5bd0;
       --shadow: 0 20px 55px rgba(10, 10, 10, 0.1);
       --page-base: #f3f3f0;
       --page-top: #ffffff;
@@ -105,7 +107,7 @@
       display: grid;
       place-items: center;
       padding: 28px;
-      background: #000;
+      background: var(--auth-base);
     }
 
     .auth-card {
@@ -183,28 +185,28 @@
 
     .auth-view .auth-card p {
       margin: 0 0 22px;
-      color: #a8a8a4;
+      color: var(--muted);
     }
 
     .auth-view .field label {
-      color: #b8b8b4;
+      color: var(--muted);
     }
 
     .auth-view input {
-      background: #050505;
-      border-color: #2a2a2d;
-      color: #ffffff;
+      background: var(--auth-card-bg);
+      border-color: var(--glass-border);
+      color: var(--text);
     }
 
     .auth-view input:focus {
-      border-color: #ffffff;
-      box-shadow: 0 0 0 4px rgba(255,255,255,0.12);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
     }
 
     .auth-view .btn.primary {
-      background: #ffffff;
-      border-color: #ffffff;
-      color: #050505;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
     }
 
     .field {
@@ -775,7 +777,7 @@
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: var(--accent);
+      background: var(--dot-color, var(--accent));
       flex: 0 0 auto;
     }
 
@@ -1100,6 +1102,12 @@
       border-color: color-mix(in srgb, var(--success) 28%, var(--line));
     }
 
+    .chip.info {
+      color: var(--info);
+      background: color-mix(in srgb, var(--info) 12%, transparent);
+      border-color: color-mix(in srgb, var(--info) 28%, var(--line));
+    }
+
     .progress {
       height: 8px;
       overflow: hidden;
@@ -1112,7 +1120,7 @@
       display: block;
       height: 100%;
       width: var(--value, 0%);
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      background: var(--bar-color, linear-gradient(90deg, var(--accent), var(--accent-2)));
       border-radius: inherit;
     }
 
@@ -1641,6 +1649,15 @@
     .dot.gold { background: #e0a82e; }
     .dot.gray { background: #6e6e72; }
     .dot.green { background: #27d6a1; }
+
+    .sq {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      display: inline-block;
+      flex: none;
+      background: var(--dot-color, var(--accent));
+    }
 
     .kanban-focus-grid {
       display: grid;
@@ -4226,17 +4243,18 @@
         <div class="grid three">
           ${db.projects.map(project => {
             const taskCount = db.tasks.filter(task => task.projectId === project.id).length;
+            const projectColor = colorForId(project.id, projectPalette);
             return `
               <article class="item-card">
                 <div class="card-head">
                   <div>
-                    <strong>${escapeHtml(project.name)}</strong>
+                    <strong><span class="sq" style="--dot-color:${projectColor}"></span> ${escapeHtml(project.name)}</strong>
                     <div class="meta">${escapeHtml(getClientName(project.clientId))} • ${dateText(project.dueDate)}</div>
                   </div>
                   ${statusChip(project.status)}
                 </div>
                 <p class="muted">${escapeHtml(project.description || "Sem descrição.")}</p>
-                <div class="progress" data-chart-tip="${escapeHtml(project.name)}|${Number(project.progress || 0)}% de progresso" style="--value:${Number(project.progress || 0)}%"><span></span></div>
+                <div class="progress" data-chart-tip="${escapeHtml(project.name)}|${Number(project.progress || 0)}% de progresso" style="--value:${Number(project.progress || 0)}%;--bar-color:${projectColor}"><span></span></div>
                 <div class="meta"><span>${project.progress || 0}%</span><span>${taskCount} tarefas</span><span>${money(project.budget)}</span></div>
                 <div class="row-actions">
                   <button class="btn" type="button" data-edit="project" data-id="${project.id}" data-icon="edit">Editar${project.roteiros?.length ? ` (${project.roteiros.length} roteiro${project.roteiros.length === 1 ? "" : "s"})` : ""}</button>
@@ -4714,7 +4732,7 @@
             return `
               <article class="item-card">
                 <div class="card-head">
-                  <div><strong>${escapeHtml(client.name)}</strong><div class="meta">${escapeHtml(client.company || "Pessoa física")}</div></div>
+                  <div><strong><span class="sq" style="--dot-color:${colorForId(client.id, projectPalette)}"></span> ${escapeHtml(client.name)}</strong><div class="meta">${escapeHtml(client.company || "Pessoa física")}</div></div>
                   <span class="chip accent">${projects} projetos</span>
                 </div>
                 <div class="meta">${escapeHtml(client.phone || "Sem telefone")} • ${escapeHtml(client.email || "Sem e-mail")}</div>
@@ -4792,7 +4810,7 @@
             ${budgetRows().map(row => `
               <div class="budget-row" data-chart-tip="${escapeHtml(row.category)}|${money(row.spent)}">
                 <strong>${escapeHtml(row.category)}</strong>
-                <div class="progress" style="--value:${row.percent}%"><span></span></div>
+                <div class="progress" style="--value:${row.percent}%;--bar-color:${colorForId(row.category, projectPalette)}"><span></span></div>
                 <span>${money(row.spent)}</span>
               </div>
             `).join("") || emptyInline("Nenhuma despesa registrada este mês.")}
@@ -5142,11 +5160,16 @@
       return Boolean(habit.history?.some(item => item.date === iso && item.done));
     }
 
-    function habitColor(id) {
-      const colors = ["red", "blue", "gold", "green", "gray"];
+    function colorForId(id, palette) {
       const score = String(id || "").split("").reduce((total, char) => total + char.charCodeAt(0), 0);
-      return colors[score % colors.length];
+      return palette[score % palette.length];
     }
+
+    function habitColor(id) {
+      return colorForId(id, ["red", "blue", "gold", "green", "gray"]);
+    }
+
+    const projectPalette = ["#5eb2ff", "#e8c15e", "#7ee7a8"];
 
     function taskRow(task) {
       return `
@@ -5221,7 +5244,7 @@
     }
 
     function statusChip(status) {
-      const tone = status === "Concluído" || status === "Finalizado" || status === "Pago" || status === "Ativo" ? "success" : status === "Cancelado" || status === "Atrasado" || status === "Inativo" ? "danger" : status === "Urgente" ? "danger" : status === "Pendente" ? "gold" : "accent";
+      const tone = status === "Concluído" || status === "Finalizado" || status === "Pago" || status === "Ativo" || status === "Ganho" ? "success" : status === "Cancelado" || status === "Atrasado" || status === "Inativo" || status === "Perdido" ? "danger" : status === "Urgente" ? "danger" : status === "Pendente" ? "gold" : status === "Reunião marcada" ? "info" : "";
       return `<span class="chip ${tone}">${escapeHtml(status || "Sem status")}</span>`;
     }
 
@@ -5274,12 +5297,12 @@
       const clean = (segments || []).filter(item => Number(item.value) > 0);
       const total = sum(clean.map(item => item.value)) || 1;
       let cumulative = 0;
-      const stops = clean.map((item, index) => {
+      const stops = clean.map(item => {
         const start = (cumulative / total) * 360;
         cumulative += Number(item.value);
         const end = (cumulative / total) * 360;
-        const opacity = Math.max(20, 92 - index * 16);
-        return `color-mix(in srgb, var(--accent) ${opacity}%, transparent) ${start.toFixed(1)}deg ${end.toFixed(1)}deg`;
+        const color = colorForId(item.label, projectPalette);
+        return `${color} ${start.toFixed(1)}deg ${end.toFixed(1)}deg`;
       }).join(", ");
       return `
         <div class="donut-wrap">
@@ -5287,9 +5310,9 @@
             <div class="donut-hole"><strong>${clean.length ? total : 0}</strong><span>total</span></div>
           </div>
           <div class="donut-legend">
-            ${clean.map((item, index) => `
+            ${clean.map(item => `
               <div class="donut-legend-row">
-                <span class="donut-dot" style="opacity:${Math.max(0.2, 0.92 - index * 0.16)}"></span>
+                <span class="donut-dot" style="--dot-color:${colorForId(item.label, projectPalette)}"></span>
                 <span>${escapeHtml(item.label)}</span>
                 <strong>${item.value}</strong>
               </div>
