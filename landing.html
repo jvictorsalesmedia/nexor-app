@@ -540,26 +540,38 @@
   .sd-layer {
     position: absolute;
     left: 50%;
-    width: 230px;
-    height: 84px;
-    border-radius: 16px;
-    transform: translateX(-50%) perspective(600px) rotateX(55deg) rotateZ(45deg);
-    box-shadow:
-      inset 0 1.5px 0 rgba(255,255,255,0.95),
-      inset 0 -14px 18px -12px rgba(10,125,140,0.3),
-      0 4px 0 rgba(10,125,140,0.22),
-      0 26px 34px -6px rgba(10,125,140,0.18);
+    width: 260px;
+    height: 130px;
+    transform: translateX(-50%);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    background: linear-gradient(160deg, rgba(20,179,198,0.7), rgba(10,125,140,0.45));
+    filter: drop-shadow(0 16px 20px rgba(10,125,140,0.16));
   }
 
-  .sd-layer:nth-child(1) { top: 6px; background: linear-gradient(155deg, #ffffff, #e9f8f9); border: 1px solid rgba(10,125,140,0.16); }
-  .sd-layer:nth-child(2) { top: 66px; background: linear-gradient(155deg, #fbfffe, #dff5f7); border: 1px solid rgba(10,125,140,0.2); }
-  .sd-layer:nth-child(3) { top: 126px; background: linear-gradient(155deg, #f6fdfd, #d3f0f3); border: 1px solid rgba(10,125,140,0.24); }
-  .sd-layer:nth-child(4) { top: 186px; background: linear-gradient(155deg, #f1fbfb, #c6ebef); border: 1px solid rgba(10,125,140,0.28); }
-  .sd-layer:nth-child(5) { top: 246px; background: linear-gradient(155deg, #ecf9f9, #b9e6eb); border: 1px solid rgba(10,125,140,0.32); }
+  .sd-layer-fill {
+    position: absolute;
+    inset: 2.5px;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    background: linear-gradient(155deg, #ffffff, #eafbfc);
+    overflow: hidden;
+  }
+
+  .sd-glow {
+    position: absolute;
+    inset: -25%;
+    background: radial-gradient(circle, rgba(94,236,255,0.6), transparent 62%);
+    filter: blur(4px);
+  }
+
+  .sd-layer.d1 { top: 0; }
+  .sd-layer.d2 { top: 54px; }
+  .sd-layer.d3 { top: 108px; }
+  .sd-layer.d4 { top: 162px; }
+  .sd-layer.d5 { top: 216px; }
 
   .sd-shield {
     position: absolute;
-    top: -26px;
+    top: -28px;
     left: 50%;
     transform: translateX(-50%);
     width: 52px; height: 52px;
@@ -590,18 +602,18 @@
   .sd-label span { color: #6b6b64; font-size: 0.72rem; }
 
   @media (min-width: 861px) {
-    .sd-connector { left: 62%; width: 90px; }
-    .sd-connector.c1 { top: 40px; }
-    .sd-connector.c2 { top: 100px; }
-    .sd-connector.c3 { top: 160px; }
-    .sd-connector.c4 { top: 220px; }
-    .sd-connector.c5 { top: 280px; }
-    .sd-label { left: 74%; }
-    .sd-label.l1 { top: 30px; }
-    .sd-label.l2 { top: 90px; }
-    .sd-label.l3 { top: 150px; }
-    .sd-label.l4 { top: 210px; }
-    .sd-label.l5 { top: 270px; }
+    .sd-connector { left: 77%; width: 70px; }
+    .sd-connector.c1 { top: 65px; }
+    .sd-connector.c2 { top: 119px; }
+    .sd-connector.c3 { top: 173px; }
+    .sd-connector.c4 { top: 227px; }
+    .sd-connector.c5 { top: 281px; }
+    .sd-label { left: 84%; }
+    .sd-label.l1 { top: 55px; }
+    .sd-label.l2 { top: 109px; }
+    .sd-label.l3 { top: 163px; }
+    .sd-label.l4 { top: 217px; }
+    .sd-label.l5 { top: 271px; }
   }
 
   @media (max-width: 860px) {
@@ -611,21 +623,15 @@
   .reveal.is-visible .sd-layer {
     animation: sdLayerIn 720ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
-  .reveal.is-visible .sd-layer:nth-child(1) { animation-delay: 60ms; }
-  .reveal.is-visible .sd-layer:nth-child(2) { animation-delay: 150ms; }
-  .reveal.is-visible .sd-layer:nth-child(3) { animation-delay: 240ms; }
-  .reveal.is-visible .sd-layer:nth-child(4) { animation-delay: 330ms; }
-  .reveal.is-visible .sd-layer:nth-child(5) { animation-delay: 420ms; }
+  .reveal.is-visible .sd-layer.d1 { animation-delay: 60ms; }
+  .reveal.is-visible .sd-layer.d2 { animation-delay: 150ms; }
+  .reveal.is-visible .sd-layer.d3 { animation-delay: 240ms; }
+  .reveal.is-visible .sd-layer.d4 { animation-delay: 330ms; }
+  .reveal.is-visible .sd-layer.d5 { animation-delay: 420ms; }
 
   @keyframes sdLayerIn {
-    from {
-      opacity: 0;
-      transform: translateX(-50%) perspective(600px) rotateX(55deg) rotateZ(45deg) translateY(-18px) scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(-50%) perspective(600px) rotateX(55deg) rotateZ(45deg) translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateX(-50%) translateY(-18px) scale(0.9); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
   }
 
   /* ---------- Final CTA ---------- */
@@ -886,11 +892,11 @@
 
       <div class="security-diagram reveal">
         <div class="sd-shield"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"></path></svg></div>
-        <div class="sd-layer"></div>
-        <div class="sd-layer"></div>
-        <div class="sd-layer"></div>
-        <div class="sd-layer"></div>
-        <div class="sd-layer"></div>
+        <div class="sd-layer d1"><div class="sd-layer-fill"></div></div>
+        <div class="sd-layer d2"><div class="sd-layer-fill"><div class="sd-glow"></div></div></div>
+        <div class="sd-layer d3"><div class="sd-layer-fill"></div></div>
+        <div class="sd-layer d4"><div class="sd-layer-fill"></div></div>
+        <div class="sd-layer d5"><div class="sd-layer-fill"></div></div>
         <div class="sd-connector c1"></div>
         <div class="sd-connector c2"></div>
         <div class="sd-connector c3"></div>
