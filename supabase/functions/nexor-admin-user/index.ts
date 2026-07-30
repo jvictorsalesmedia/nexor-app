@@ -59,7 +59,7 @@ Deno.serve(async (req: Request) => {
   const body = await req.json().catch(() => ({}));
   const action = String(body.action || "");
 
-  if (action === "create") return createUser(admin, body, callerData.user.id);
+  if (action === "create") return createUser(admin, body);
   if (action === "update_password") return updatePassword(admin, body, callerData.user.id);
   if (action === "set_status") return setStatus(admin, body, callerData.user.id);
   if (action === "delete") return deleteUser(admin, body, callerData.user.id);
@@ -69,8 +69,7 @@ Deno.serve(async (req: Request) => {
 
 async function createUser(
   admin: ReturnType<typeof createClient>,
-  body: Record<string, unknown>,
-  callerId: string
+  body: Record<string, unknown>
 ) {
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
@@ -118,11 +117,6 @@ async function createUser(
     return json({ error: upsertError.message }, 500);
   }
 
-  const passwordError = await savePasswordNote(admin, userId, password, callerId);
-  if (passwordError) {
-    return json({ error: passwordError }, 500);
-  }
-
   return json({ profile });
 }
 
@@ -146,11 +140,6 @@ async function updatePassword(
   const { error } = await admin.auth.admin.updateUserById(userId, { password });
   if (error) {
     return json({ error: error.message }, 400);
-  }
-
-  const passwordError = await savePasswordNote(admin, userId, password, callerId);
-  if (passwordError) {
-    return json({ error: passwordError }, 500);
   }
 
   return json({ ok: true });
@@ -232,26 +221,6 @@ async function mutableUserError(
   }
 
   return "";
-}
-
-async function savePasswordNote(
-  admin: ReturnType<typeof createClient>,
-  userId: string,
-  password: string,
-  updatedBy: string
-) {
-  const { error } = await admin
-    .from("nexor_user_password_notes")
-    .upsert(
-      {
-        user_id: userId,
-        password_note: password,
-        updated_by: updatedBy
-      },
-      { onConflict: "user_id" }
-    );
-
-  return error?.message || "";
 }
 
 function json(payload: unknown, status = 200) {

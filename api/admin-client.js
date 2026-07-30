@@ -1,3 +1,5 @@
+const { userError, sendSafeError } = require("./_lib/safe-error");
+
 const jsonHeaders = { "Content-Type": "application/json" };
 const mainAdminEmail = "jvgsales72@gmail.com";
 const allowedRoles = new Set(["gestor", "colaborador"]);
@@ -23,7 +25,7 @@ module.exports = async function handler(req, res) {
       process.env.PUBLIC_SITE_URL ||
       ""
     ).replace(/\/$/, "");
-    if (!siteOrigin) throw new Error("Nao foi possivel determinar a URL do site para o convite.");
+    if (!siteOrigin) throw userError("Nao foi possivel determinar a URL do site para o convite.");
 
     const token = String(req.headers.authorization || "").replace("Bearer ", "").trim();
     if (!token) return res.status(401).json({ error: "Missing admin session." });
@@ -52,14 +54,14 @@ module.exports = async function handler(req, res) {
 
     res.status(400).json({ error: "Unknown action." });
   } catch (error) {
-    res.status(400).json({ error: error.message || "Nexor admin API error." });
+    sendSafeError(res, error, "Nexor admin API error.");
   }
 };
 
 async function createTeamUser(supabaseUrl, serviceKey, body, callerId, siteOrigin) {
   const payload = normalizeTeamUserPayload(body);
   if (!payload.name || !payload.email) {
-    throw new Error("Informe nome e e-mail.");
+    throw userError("Informe nome e e-mail.");
   }
 
   const redirectTo = `${siteOrigin}/app`;
@@ -74,7 +76,7 @@ async function createTeamUser(supabaseUrl, serviceKey, body, callerId, siteOrigi
     }
   });
   const user = auth.user || auth;
-  if (!user?.id) throw new Error("Usuario nao foi criado no Supabase Auth.");
+  if (!user?.id) throw userError("Usuario nao foi criado no Supabase Auth.");
 
   const profile = await upsertProfile(supabaseUrl, serviceKey, {
     id: user.id,
@@ -90,13 +92,13 @@ async function createTeamUser(supabaseUrl, serviceKey, body, callerId, siteOrigi
 
 async function updateTeamUserPassword(supabaseUrl, serviceKey, anonKey, body, callerId, siteOrigin) {
   const userId = String(body.userId || "");
-  if (!userId) throw new Error("Usuario nao informado.");
+  if (!userId) throw userError("Usuario nao informado.");
 
   const protectedError = await mutableUserError(supabaseUrl, serviceKey, userId, callerId);
-  if (protectedError) throw new Error(protectedError);
+  if (protectedError) throw userError(protectedError);
 
   const profile = await restSingle(supabaseUrl, serviceKey, `/nexor_profiles?id=eq.${encodeURIComponent(userId)}&select=email`);
-  if (!profile?.email) throw new Error("Usuario nao encontrado.");
+  if (!profile?.email) throw userError("Usuario nao encontrado.");
 
   const redirectTo = `${siteOrigin}/app`;
   await authAdmin(supabaseUrl, anonKey, `/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
@@ -108,10 +110,10 @@ async function updateTeamUserPassword(supabaseUrl, serviceKey, anonKey, body, ca
 
 async function setTeamUserStatus(supabaseUrl, serviceKey, body, callerId) {
   const userId = String(body.userId || "");
-  if (!userId) throw new Error("Usuario nao informado.");
+  if (!userId) throw userError("Usuario nao informado.");
 
   const protectedError = await mutableUserError(supabaseUrl, serviceKey, userId, callerId);
-  if (protectedError) throw new Error(protectedError);
+  if (protectedError) throw userError(protectedError);
 
   const status = String(body.status || "") === "inativo" ? "inativo" : "ativo";
   const profile = await restPatch(supabaseUrl, serviceKey, `/nexor_profiles?id=eq.${encodeURIComponent(userId)}`, { status });
@@ -120,10 +122,10 @@ async function setTeamUserStatus(supabaseUrl, serviceKey, body, callerId) {
 
 async function deleteTeamUser(supabaseUrl, serviceKey, body, callerId) {
   const userId = String(body.userId || "");
-  if (!userId) throw new Error("Usuario nao informado.");
+  if (!userId) throw userError("Usuario nao informado.");
 
   const protectedError = await mutableUserError(supabaseUrl, serviceKey, userId, callerId);
-  if (protectedError) throw new Error(protectedError);
+  if (protectedError) throw userError(protectedError);
 
   await authAdmin(supabaseUrl, serviceKey, `/admin/users/${encodeURIComponent(userId)}`, { method: "DELETE" });
   return { ok: true };
@@ -144,8 +146,8 @@ async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId) {
     serviceKey,
     `/nexor_signup_requests?id=eq.${encodeURIComponent(body.requestId || "")}&select=*`
   );
-  if (!request) throw new Error("Pre-cadastro nao encontrado.");
-  if (request.status !== "pendente") throw new Error("Este pre-cadastro ja foi analisado.");
+  if (!request) throw userError("Pre-cadastro nao encontrado.");
+  if (request.status !== "pendente") throw userError("Este pre-cadastro ja foi analisado.");
 
   const businessName = request.business_name || `Conta ${request.responsible_name || request.email.split("@")[0]}`;
   const responsibleName = request.responsible_name || request.email.split("@")[0];
@@ -170,7 +172,7 @@ async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId) {
     }
   });
   const user = auth.user || auth;
-  if (!user?.id) throw new Error("Usuario nao foi criado no Supabase Auth.");
+  if (!user?.id) throw userError("Usuario nao foi criado no Supabase Auth.");
 
   await upsertProfile(supabaseUrl, serviceKey, {
     id: user.id,
@@ -224,7 +226,7 @@ async function approveSignupRequest(supabaseUrl, serviceKey, body, callerId) {
 
 async function rejectSignupRequest(supabaseUrl, serviceKey, body, callerId) {
   const requestId = String(body.requestId || "");
-  if (!requestId) throw new Error("Pre-cadastro nao informado.");
+  if (!requestId) throw userError("Pre-cadastro nao informado.");
 
   const request = await restPatch(
     supabaseUrl,
@@ -295,7 +297,7 @@ async function mutableUserError(supabaseUrl, serviceKey, userId, callerId) {
 async function createClientAccount(supabaseUrl, serviceKey, body, callerId, siteOrigin) {
   const payload = normalizeClientPayload(body);
   if (!payload.businessName || !payload.responsibleName || !payload.email || !payload.accessUsername) {
-    throw new Error("Campos obrigatórios ausentes.");
+    throw userError("Campos obrigatórios ausentes.");
   }
 
   // Convite por email: a pessoa define a própria senha ao clicar no link. O
@@ -314,7 +316,7 @@ async function createClientAccount(supabaseUrl, serviceKey, body, callerId, site
     }
   });
   const user = auth.user || auth;
-  if (!user?.id) throw new Error("Usuário não foi criado no Supabase Auth.");
+  if (!user?.id) throw userError("Usuário não foi criado no Supabase Auth.");
 
   await upsertProfile(supabaseUrl, serviceKey, {
     id: user.id,
@@ -350,7 +352,7 @@ async function createClientAccount(supabaseUrl, serviceKey, body, callerId, site
 async function updateClientAccount(supabaseUrl, serviceKey, body, callerId) {
   const payload = normalizeClientPayload(body);
   const client = await restSingle(supabaseUrl, serviceKey, `/nexor_clients?id=eq.${encodeURIComponent(payload.id)}&select=*`);
-  if (!client) throw new Error("Cliente não encontrado.");
+  if (!client) throw userError("Cliente não encontrado.");
 
   const authPatch = {
     email: payload.email,
@@ -399,7 +401,7 @@ async function updateClientAccount(supabaseUrl, serviceKey, body, callerId) {
 
 async function resetClientPassword(supabaseUrl, serviceKey, anonKey, body, siteOrigin) {
   const client = await restSingle(supabaseUrl, serviceKey, `/nexor_clients?id=eq.${encodeURIComponent(body.clientId || "")}&select=id,email,slug`);
-  if (!client) throw new Error("Cliente não encontrado.");
+  if (!client) throw userError("Cliente não encontrado.");
 
   // /recover é o endpoint certo para usuário que já existe (o /invite rejeita
   // quem já confirmou a conta). Usa a anon key, como o GoTrue espera nesse
@@ -414,7 +416,7 @@ async function resetClientPassword(supabaseUrl, serviceKey, anonKey, body, siteO
 
 async function deleteClientAccount(supabaseUrl, serviceKey, body) {
   const client = await restSingle(supabaseUrl, serviceKey, `/nexor_clients?id=eq.${encodeURIComponent(body.clientId || "")}&select=*`);
-  if (!client) throw new Error("Cliente não encontrado.");
+  if (!client) throw userError("Cliente não encontrado.");
   await authAdmin(supabaseUrl, serviceKey, `/admin/users/${client.auth_user_id}`, { method: "DELETE" });
   return { ok: true };
 }
@@ -461,7 +463,7 @@ async function authUser(supabaseUrl, anonKey, token) {
   const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
     headers: { apikey: anonKey, Authorization: `Bearer ${token}` }
   });
-  if (!response.ok) throw new Error("Sessão inválida.");
+  if (!response.ok) throw userError("Sessão inválida.");
   return response.json();
 }
 

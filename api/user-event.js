@@ -1,3 +1,5 @@
+const { userError, sendSafeError } = require("./_lib/safe-error");
+
 const jsonHeaders = { "Content-Type": "application/json" };
 const mainAdminEmail = "jvgsales72@gmail.com";
 
@@ -26,14 +28,14 @@ module.exports = async function handler(req, res) {
       serviceKey,
       `/nexor_profiles?id=eq.${encodeURIComponent(caller.id)}&select=id,email,full_name,app_role,status`
     );
-    if (!profile || profile.status !== "ativo") throw new Error("Usuario sem acesso ativo.");
+    if (!profile || profile.status !== "ativo") throw userError("Usuario sem acesso ativo.");
 
     const admin = await restSingle(
       supabaseUrl,
       serviceKey,
       `/nexor_profiles?email=eq.${encodeURIComponent(mainAdminEmail)}&select=id,email,full_name&limit=1`
     );
-    if (!admin?.id) throw new Error("Administrador principal nao encontrado.");
+    if (!admin?.id) throw userError("Administrador principal nao encontrado.");
 
     const name = profile.full_name || caller.user_metadata?.full_name || profile.email || caller.email || "Usuario";
     const notification = {
@@ -51,7 +53,7 @@ module.exports = async function handler(req, res) {
 
     res.status(200).json({ ok: true });
   } catch (error) {
-    res.status(400).json({ error: error.message || "Nexor user event API error." });
+    sendSafeError(res, error, "Nexor user event API error.");
   }
 };
 

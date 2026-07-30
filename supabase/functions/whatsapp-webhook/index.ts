@@ -3,9 +3,39 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const VERIFY_TOKEN = Deno.env.get("WHATSAPP_VERIFY_TOKEN") ?? "";
 const WHATSAPP_ACCESS_TOKEN = Deno.env.get("WHATSAPP_ACCESS_TOKEN") ?? "";
 const WHATSAPP_PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") ?? "";
+const WHATSAPP_APP_SECRET = Deno.env.get("WHATSAPP_APP_SECRET") ?? "";
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") ?? "";
 const SUPABASE_URL = (Deno.env.get("SUPABASE_URL") ?? "").replace(/\/$/, "");
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+// Confere que o POST realmente veio da Meta (nao so qualquer um que ache a
+// URL do webhook) — HMAC-SHA256 do corpo cru usando o App Secret do app no
+// Meta for Developers, comparado em tempo constante contra o header
+// x-hub-signature-256 que a Meta manda em toda entrega real.
+// https://developers.facebook.com/docs/messenger-platform/webhooks#validate-payloads
+async function verifyMetaSignature(rawBody: string, signatureHeader: string | null): Promise<boolean> {
+  if (!WHATSAPP_APP_SECRET || !signatureHeader) return false;
+  const expectedHex = signatureHeader.replace(/^sha256=/, "");
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(WHATSAPP_APP_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(rawBody));
+  const computedHex = Array.from(new Uint8Array(mac))
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
+
+  if (computedHex.length !== expectedHex.length) return false;
+  let diff = 0;
+  for (let i = 0; i < computedHex.length; i++) {
+    diff |= computedHex.charCodeAt(i) ^ expectedHex.charCodeAt(i);
+  }
+  return diff === 0;
+}
 
 const ownerIdByPhone = new Map<string, string>();
 
@@ -35,10 +65,17 @@ Deno.serve(async (req: Request) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  const rawBody = await req.text();
+  const signatureOk = await verifyMetaSignature(rawBody, req.headers.get("x-hub-signature-256"));
+  if (!signatureOk) {
+    console.error("whatsapp_webhook: assinatura invalida ou ausente, mensagem rejeitada");
+    return new Response("Invalid signature", { status: 401 });
+  }
+
   // Sempre responde 200 pro Meta, mesmo em erro interno — senao ele reentrega
   // a mesma mensagem em loop. Erros ficam so no log e no status do inbox.
   try {
-    const payload = await req.json().catch(() => ({}));
+    const payload = JSON.parse(rawBody || "{}");
     const message = extractMessage(payload);
 
     if (!message) {

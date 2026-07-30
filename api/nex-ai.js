@@ -1,3 +1,5 @@
+const { userError, sendSafeError } = require("./_lib/safe-error");
+
 const jsonHeaders = { "Content-Type": "application/json" };
 
 module.exports = async function handler(req, res) {
@@ -14,12 +16,12 @@ module.exports = async function handler(req, res) {
     if (!geminiKey) throw new Error("GEMINI_API_KEY nao configurada.");
 
     const accessToken = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
-    if (!accessToken) throw new Error("Sessão inválida. Faça login novamente.");
+    if (!accessToken) throw userError("Sessão inválida. Faça login novamente.");
 
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
     const message = String(body.message || "").trim();
     const history = Array.isArray(body.history) ? body.history.slice(-12) : [];
-    if (!message) throw new Error("Digite uma mensagem.");
+    if (!message) throw userError("Digite uma mensagem.");
 
     // Confirma que o token pertence a um usuario real antes de gastar chamada de IA.
     await getCurrentUser(supabaseUrl, anonKey, accessToken);
@@ -52,7 +54,7 @@ module.exports = async function handler(req, res) {
     const summary = await appendRecord(supabaseUrl, anonKey, accessToken, parsed);
     res.status(200).json({ ok: true, type: parsed.type, summary });
   } catch (error) {
-    res.status(400).json({ error: error.message || "Não foi possível processar a mensagem." });
+    sendSafeError(res, error, "Não foi possível processar a mensagem.");
   }
 };
 
@@ -60,7 +62,7 @@ async function getCurrentUser(supabaseUrl, anonKey, accessToken) {
   const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
     headers: { apikey: anonKey, Authorization: `Bearer ${accessToken}` }
   });
-  if (!response.ok) throw new Error("Sessão expirada. Faça login novamente.");
+  if (!response.ok) throw userError("Sessão expirada. Faça login novamente.");
   return response.json();
 }
 
@@ -169,7 +171,7 @@ async function fetchWorkspaceDb(supabaseUrl, anonKey, accessToken) {
     "/nexor_records?record_type=eq.setting&data->>key=eq.workspace&select=id,data&limit=1"
   );
   const record = rows?.[0];
-  if (!record) throw new Error("Workspace não encontrado para este usuário.");
+  if (!record) throw userError("Workspace não encontrado para este usuário.");
   return record;
 }
 

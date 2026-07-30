@@ -1,3 +1,6 @@
+const { userError, sendSafeError } = require("./_lib/safe-error");
+const { checkRateLimit, getClientIp } = require("./_lib/rate-limit");
+
 const jsonHeaders = { "Content-Type": "application/json" };
 
 module.exports = async function handler(req, res) {
@@ -14,7 +17,16 @@ module.exports = async function handler(req, res) {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
     const slug = String(body.slug || "").trim().toLowerCase();
     const identifier = String(body.identifier || "").trim().toLowerCase();
-    if (!slug || !identifier) throw new Error("Informe o link e o usuário de acesso.");
+    if (!slug || !identifier) throw userError("Informe o link e o usuário de acesso.");
+
+    // So confirma existencia/dados do cliente, nao e destrutivo — limite mais
+    // permissivo que o do forgot-password, so pra evitar varredura em massa.
+    const byIdentifier = await checkRateLimit(supabaseUrl, serviceKey, "resolve-client-login:id", `${slug}:${identifier}`, { max: 10, windowSeconds: 900 });
+    const byIp = await checkRateLimit(supabaseUrl, serviceKey, "resolve-client-login:ip", getClientIp(req), { max: 30, windowSeconds: 900 });
+    if (!byIdentifier.allowed || !byIp.allowed) {
+      res.status(429).json({ error: "Muitas tentativas. Tente novamente mais tarde." });
+      return;
+    }
 
     const rows = await restFetch(
       supabaseUrl,
@@ -36,7 +48,7 @@ module.exports = async function handler(req, res) {
       slug: client.slug
     });
   } catch (error) {
-    res.status(400).json({ error: error.message || "Não foi possível resolver o login." });
+    sendSafeError(res, error, "Não foi possível resolver o login.");
   }
 };
 

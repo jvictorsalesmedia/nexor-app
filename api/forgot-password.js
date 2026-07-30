@@ -1,3 +1,6 @@
+const { userError, sendSafeError } = require("./_lib/safe-error");
+const { checkRateLimit, getClientIp } = require("./_lib/rate-limit");
+
 const jsonHeaders = { "Content-Type": "application/json" };
 
 module.exports = async function handler(req, res) {
@@ -13,7 +16,17 @@ module.exports = async function handler(req, res) {
 
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
     const identifier = String(body.identifier || "").trim().toLowerCase();
-    if (!identifier) throw new Error("Informe seu email ou usuário de acesso.");
+    if (!identifier) throw userError("Informe seu email ou usuário de acesso.");
+
+    // Essa chamada troca a senha de verdade — precisa de limite curto tanto
+    // por identificador (nao deixar derrubarem uma conta especifica) quanto
+    // por IP (nao deixar varrer varios identificadores de uma vez so).
+    const byIdentifier = await checkRateLimit(supabaseUrl, serviceKey, "forgot-password:id", identifier, { max: 3, windowSeconds: 3600 });
+    const byIp = await checkRateLimit(supabaseUrl, serviceKey, "forgot-password:ip", getClientIp(req), { max: 15, windowSeconds: 3600 });
+    if (!byIdentifier.allowed || !byIp.allowed) {
+      res.status(429).json({ error: "Muitas tentativas. Tente novamente mais tarde." });
+      return;
+    }
 
     const clients = await restFetch(
       supabaseUrl,
@@ -43,7 +56,7 @@ module.exports = async function handler(req, res) {
 
     res.status(200).json({ ok: true });
   } catch (error) {
-    res.status(400).json({ error: error.message || "Nao foi possivel redefinir a senha." });
+    sendSafeError(res, error, "Nao foi possivel redefinir a senha.");
   }
 };
 

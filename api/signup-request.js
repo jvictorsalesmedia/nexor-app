@@ -1,3 +1,5 @@
+const { userError, sendSafeError } = require("./_lib/safe-error");
+
 const jsonHeaders = { "Content-Type": "application/json" };
 
 module.exports = async function handler(req, res) {
@@ -46,9 +48,11 @@ module.exports = async function handler(req, res) {
 
     res.status(200).json({ request: rows[0] });
   } catch (error) {
-    const message = error.message || "Nao foi possivel enviar o pre-cadastro.";
-    const status = /duplicate|unique|nexor_signup_requests_pending_email/i.test(message) ? 409 : 400;
-    res.status(status).json({ error: status === 409 ? "Ja existe um pre-cadastro pendente para este e-mail." : message });
+    if (/duplicate|unique|nexor_signup_requests_pending_email/i.test(error.message || "")) {
+      res.status(409).json({ error: "Ja existe um pre-cadastro pendente para este e-mail." });
+      return;
+    }
+    sendSafeError(res, error, "Nao foi possivel enviar o pre-cadastro.");
   }
 };
 
@@ -71,19 +75,19 @@ function normalizeSignupRequest(body) {
 
 function validateSignupRequest(payload) {
   if (!payload.responsibleName || !payload.email) {
-    throw new Error("Informe nome do responsavel e e-mail.");
+    throw userError("Informe nome do responsavel e e-mail.");
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
-    throw new Error("Informe um e-mail valido.");
+    throw userError("Informe um e-mail valido.");
   }
   if (!payload.document) {
-    throw new Error("Informe o CPF ou CNPJ (necessario para gerar a cobranca).");
+    throw userError("Informe o CPF ou CNPJ (necessario para gerar a cobranca).");
   }
   if (!payload.photoDataUrl || !/^data:image\/(png|jpe?g|webp);base64,/i.test(payload.photoDataUrl)) {
-    throw new Error("Envie uma foto do responsavel.");
+    throw userError("Envie uma foto do responsavel.");
   }
   if (payload.photoDataUrl.length > 1800000) {
-    throw new Error("A foto esta muito grande. Envie uma imagem menor.");
+    throw userError("A foto esta muito grande. Envie uma imagem menor.");
   }
 }
 
