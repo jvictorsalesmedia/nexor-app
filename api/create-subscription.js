@@ -1,15 +1,9 @@
+const { userError, sendSafeError } = require("./_lib/safe-error");
+const { checkRateLimit, getClientIp } = require("./_lib/rate-limit");
+
 const jsonHeaders = { "Content-Type": "application/json" };
 
 const PLAN_PRICES = { basico: 30, premium: 50, pro: 75 };
-
-// Erros "esperados" (validacao nossa ou resposta da API do Asaas) sao seguros
-// pra mostrar pro usuario. Qualquer outra excecao (ex: erro nativo do fetch
-// que pode embutir o valor de um header invalido na mensagem) fica só no log.
-function userError(message) {
-  const error = new Error(message);
-  error.expose = true;
-  return error;
-}
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -32,18 +26,38 @@ module.exports = async function handler(req, res) {
 
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
     const requestId = String(body.requestId || "").trim();
-    if (!requestId) throw userError("Solicitacao nao informada.");
+    const email = String(body.email || "").trim().toLowerCase();
+    if (!requestId && !email) throw userError("Informe a solicitacao ou o e-mail.");
 
-    const request = await restSingle(
-      supabaseUrl,
-      serviceKey,
-      `/nexor_signup_requests?id=eq.${encodeURIComponent(requestId)}&select=*`
-    );
+    let request;
+    if (requestId) {
+      request = await restSingle(
+        supabaseUrl,
+        serviceKey,
+        `/nexor_signup_requests?id=eq.${encodeURIComponent(requestId)}&select=*`
+      );
+    } else {
+      // Caminho de "retomar pagamento": publico e so identificado por
+      // e-mail, entao precisa de rate limit pra nao virar oraculo de
+      // enumeracao nem jeito de spammar reenvio de email.
+      const byIdentifier = await checkRateLimit(supabaseUrl, serviceKey, "resume-signup:id", email, { max: 5, windowSeconds: 3600 });
+      const byIp = await checkRateLimit(supabaseUrl, serviceKey, "resume-signup:ip", getClientIp(req), { max: 20, windowSeconds: 3600 });
+      if (!byIdentifier.allowed || !byIp.allowed) {
+        res.status(429).json({ error: "Muitas tentativas. Tente novamente mais tarde." });
+        return;
+      }
+      request = await restSingle(
+        supabaseUrl,
+        serviceKey,
+        `/nexor_signup_requests?email=eq.${encodeURIComponent(email)}&status=eq.pendente&order=created_at.desc&limit=1&select=*`
+      );
+    }
     if (!request) throw userError("Pre-cadastro nao encontrado.");
     if (request.status !== "pendente") throw userError("Este pre-cadastro ja foi processado.");
 
-    // Ja tem assinatura criada (ex: usuario recarregou a pagina) — so devolve
-    // o link de pagamento existente em vez de criar tudo de novo no Asaas.
+    // Ja tem assinatura criada (ex: usuario recarregou a pagina, ou clicou em
+    // "retomar pagamento") — so devolve o link existente em vez de criar
+    // tudo de novo no Asaas, e sem reenviar o email de cobranca.
     if (request.asaas_subscription_id) {
       const invoiceUrl = await fetchInvoiceUrl(asaasApiKey, request.asaas_subscription_id);
       res.status(200).json({ invoiceUrl });
@@ -88,18 +102,45 @@ module.exports = async function handler(req, res) {
       }
     });
 
+    try {
+      await sendInvoiceEmail(request.email, invoiceUrl, request.business_name);
+    } catch (error) {
+      console.error("create-subscription: falha ao enviar email de cobranca:", error.message);
+    }
+
     res.status(200).json({ invoiceUrl });
   } catch (error) {
-    // Nunca ecoar error.message pro cliente: pode conter detalhe interno
-    // (ex: valor de header/env var invalido aparece na mensagem de erro
-    // nativa do fetch). Log fica só no servidor.
-    console.error("create-subscription:", error.message);
-    res.status(400).json({ error: error.expose ? error.message : "Nao foi possivel gerar a cobranca. Tente novamente em instantes." });
+    sendSafeError(res, error, "Nao foi possivel gerar a cobranca. Tente novamente em instantes.");
   }
 };
 
 function planLabel(plan) {
   return { basico: "Básico", premium: "Premium", pro: "Pro" }[plan] || plan;
+}
+
+// Manda o link de pagamento por email assim que a cobranca e criada — e o
+// que garante que a pessoa consegue retomar o pagamento mesmo se fechar a
+// aba do Asaas sem pagar, sem depender de lembrar de voltar ao site.
+async function sendInvoiceEmail(email, invoiceUrl, businessName) {
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) {
+    console.error("create-subscription: GMAIL_USER/GMAIL_APP_PASSWORD nao configurados, email de cobranca nao enviado.");
+    return;
+  }
+
+  const nodemailer = require("nodemailer");
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass }
+  });
+
+  await transporter.sendMail({
+    from: `Nexor <${user}>`,
+    to: email,
+    subject: "Finalize seu cadastro no Nexor",
+    text: `Olá! Recebemos seu pré-cadastro${businessName ? ` para ${businessName}` : ""} no Nexor.\n\nPara ativar sua conta, finalize o pagamento pelo link abaixo:\n${invoiceUrl}\n\nSe o link expirar ou você perder este email, é só voltar ao site e usar a opção "Já enviei meu pré-cadastro, retomar pagamento" informando este mesmo email.\n\nQualquer dúvida, fale com a gente: 5522998229144`
+  });
 }
 
 function onlyDigits(value) {

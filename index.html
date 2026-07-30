@@ -2348,6 +2348,17 @@
       transform: scaleX(1);
     }
 
+    .app-tabs button.locked {
+      opacity: 0.5;
+      border-style: dashed;
+    }
+
+    .app-tabs button.locked:hover {
+      opacity: 0.78;
+      transform: none;
+      box-shadow: none;
+    }
+
     .app-tabs svg {
       width: 19px;
       height: 19px;
@@ -2611,6 +2622,7 @@
         <button id="signupRequestBtn" class="btn" type="button" data-icon="plus">Solicitar acesso</button>
       </div>
       <button id="forgotPasswordBtn" class="btn" type="button" style="margin-top:8px;width:100%">Esqueci minha senha</button>
+      <button id="resumePaymentBtn" class="btn" type="button" style="margin-top:8px;width:100%">Já enviei meu pré-cadastro, retomar pagamento</button>
       <div id="authError" class="auth-error" role="alert"></div>
     </form>
 
@@ -2748,6 +2760,7 @@
       "bar-chart-3": '<path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path>',
       "settings": '<path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06A2 2 0 1 1 7.03 3.84l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3a2 2 0 1 1 4 0v.1A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.7.6z"></path>',
       "log-in": '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="m10 17 5-5-5-5"></path><path d="M15 12H3"></path>',
+      "lock": '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>',
       "log-out": '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path>',
       "plus": '<path d="M12 5v14"></path><path d="M5 12h14"></path>',
       "moon": '<path d="M20 14.2A8 8 0 1 1 9.8 4a6 6 0 0 0 10.2 10.2z"></path>',
@@ -3485,6 +3498,39 @@
       return true;
     }
 
+    // Modulo fora do plano Básico do cliente: mostra bloqueado (com CTA de
+    // upgrade) em vez de simplesmente sumir do menu. Não se aplica a
+    // "accounts" (admin-only, não é sobre plano) nem a restrição de
+    // colaborador (é papel interno, não é venda).
+    function moduleUpsellLocked(moduleId) {
+      return Boolean(
+        currentUser &&
+        currentUser.role === "cliente" &&
+        currentUser.plan === "basico" &&
+        moduleId !== "accounts" &&
+        !planModules.basico.has(moduleId)
+      );
+    }
+
+    function moduleButtonHtml(moduleId, label, iconName) {
+      if (canAccess(moduleId)) {
+        return `<button type="button" class="${activeModule === moduleId ? "active" : ""}" data-module="${moduleId}">${icon(iconName)}<span>${label}</span></button>`;
+      }
+      if (moduleUpsellLocked(moduleId)) {
+        return `<button type="button" class="locked" data-upsell="${moduleId}" title="Disponível nos planos Premium e Pro">${icon("lock")}<span>${label}</span></button>`;
+      }
+      return "";
+    }
+
+    function showModuleUpsell(moduleId) {
+      const entry = modules.find(item => item[0] === moduleId);
+      const label = entry ? entry[1] : "Este recurso";
+      const message = `Olá! Quero saber mais sobre o upgrade de plano no Nexor para desbloquear "${label}".`;
+      const waLink = `https://wa.me/5522998229144?text=${encodeURIComponent(message)}`;
+      const shouldOpen = confirm(`"${label}" está disponível nos planos Premium e Pro. Quer falar com a gente pelo WhatsApp para fazer upgrade?`);
+      if (shouldOpen) window.open(waLink, "_blank");
+    }
+
     async function boot() {
       clientRoute = parseClientRoute();
       pendingAuthHash = parseAuthHash();
@@ -3497,6 +3543,7 @@
       $("#setPasswordForm").addEventListener("submit", acceptInviteAndSetPassword);
       $("#signupRequestBtn")?.addEventListener("click", openSignupRequestModal);
       $("#forgotPasswordBtn")?.addEventListener("click", handleForgotPassword);
+      $("#resumePaymentBtn")?.addEventListener("click", openResumePaymentModal);
 
       if (!pendingAuthHash && new URLSearchParams(location.search).get("signup") === "1") {
         history.replaceState(null, "", location.pathname);
@@ -3667,13 +3714,108 @@
         if (!subscriptionResponse.ok || !subscriptionResult.invoiceUrl) {
           throw new Error(subscriptionResult.error || "Pré-cadastro enviado, mas não foi possível gerar a cobrança. Entraremos em contato.");
         }
-        window.location.href = subscriptionResult.invoiceUrl;
+        showPaymentConfirmation(subscriptionResult.invoiceUrl);
         return;
       } catch (error) {
         toast(error.message || "Não foi possível enviar o pré-cadastro.", "error");
       } finally {
         submit.disabled = false;
         submit.textContent = "Enviar pré-cadastro";
+        applyIcons(form);
+      }
+    }
+
+    // Tela mostrada depois de gerar a cobrança (tanto no pré-cadastro novo
+    // quanto ao retomar um pendente) — não redireciona na hora, porque se a
+    // pessoa fechar essa aba sem pagar ela perde o link. Abre em nova aba e
+    // deixa o link visível/copiável aqui, além de já ter sido mandado por
+    // email (ver sendInvoiceEmail em api/create-subscription.js).
+    function showPaymentConfirmation(invoiceUrl) {
+      const modalRoot = $("#modalRoot");
+      modalRoot.innerHTML = `
+        <dialog>
+          <div class="modal">
+            <div class="modal-head">
+              <div>
+                <h2>Pré-cadastro recebido!</h2>
+                <p class="muted">Também enviamos esse link de pagamento para o seu e-mail — se algo der errado por aqui, ele fica salvo lá.</p>
+              </div>
+              <button class="btn icon" type="button" data-close-modal title="Fechar" data-icon="x"></button>
+            </div>
+            <div class="field wide">
+              <label>Link de pagamento</label>
+              <input type="text" readonly value="${escapeHtml(invoiceUrl)}" onclick="this.select()">
+            </div>
+            <div class="modal-actions">
+              <button class="btn" type="button" data-close-modal>Fechar</button>
+              <a class="btn accent" href="${escapeHtml(invoiceUrl)}" target="_blank" rel="noreferrer" data-icon="log-in">Ir para pagamento</a>
+            </div>
+          </div>
+        </dialog>
+      `;
+      applyIcons(modalRoot);
+      const dialog = $("dialog", modalRoot);
+      if (dialog.showModal) dialog.showModal();
+      $$("[data-close-modal]", modalRoot).forEach(button => button.addEventListener("click", closeModal));
+    }
+
+    function openResumePaymentModal() {
+      const modalRoot = $("#modalRoot");
+      modalRoot.innerHTML = `
+        <dialog>
+          <form class="modal" id="resumePaymentForm">
+            <div class="modal-head">
+              <div>
+                <h2>Retomar pagamento</h2>
+                <p class="muted">Informe o e-mail usado no pré-cadastro e reenviamos o link de pagamento.</p>
+              </div>
+              <button class="btn icon" type="button" data-close-modal title="Fechar" data-icon="x"></button>
+            </div>
+            <div class="form-grid">
+              ${field("E-mail do pré-cadastro", "email", "", "email", true)}
+            </div>
+            <div class="modal-actions">
+              <button class="btn" type="button" data-close-modal>Cancelar</button>
+              <button class="btn accent" type="submit" data-icon="check">Buscar pagamento</button>
+            </div>
+          </form>
+        </dialog>
+      `;
+      applyIcons(modalRoot);
+      const dialog = $("dialog", modalRoot);
+      if (dialog.showModal) dialog.showModal();
+      $$("[data-close-modal]", modalRoot).forEach(button => button.addEventListener("click", closeModal));
+      $("#resumePaymentForm").addEventListener("submit", submitResumePayment);
+    }
+
+    async function submitResumePayment(event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      const submit = form.querySelector("button[type='submit']");
+      const email = String(formData.get("email") || "").trim().toLowerCase();
+      if (!email) {
+        toast("Informe o e-mail do pré-cadastro.", "error");
+        return;
+      }
+      submit.disabled = true;
+      submit.textContent = "Buscando...";
+      try {
+        const response = await fetch("/api/create-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.invoiceUrl) {
+          throw new Error(result.error || "Não foi possível encontrar um pré-cadastro pendente para esse e-mail.");
+        }
+        showPaymentConfirmation(result.invoiceUrl);
+      } catch (error) {
+        toast(error.message || "Não foi possível retomar o pagamento.", "error");
+      } finally {
+        submit.disabled = false;
+        submit.textContent = "Buscar pagamento";
         applyIcons(form);
       }
     }
@@ -3908,11 +4050,11 @@
       if (expandedNavGroup === null) expandedNavGroup = activeNavGroupLabel();
       $("#nav").innerHTML = moduleGroups
         .map(([groupLabel, ids]) => {
-          const items = ids.filter(id => canAccess(id));
+          const items = ids.filter(id => canAccess(id) || moduleUpsellLocked(id));
           if (!items.length) return "";
           const itemButtons = items.map(id => {
             const [moduleId, label, iconName] = byId[id];
-            return `<button type="button" class="${activeModule === moduleId ? "active" : ""}" data-module="${moduleId}">${icon(iconName)}<span>${label}</span></button>`;
+            return moduleButtonHtml(moduleId, label, iconName);
           }).join("");
           if (colorful) {
             return `
@@ -3940,6 +4082,10 @@
         renderNav();
       }));
       $$(".nav-group-items button, .sidebar-tabs-colorful button").forEach(button => button.addEventListener("click", () => {
+        if (button.dataset.upsell) {
+          showModuleUpsell(button.dataset.upsell);
+          return;
+        }
         activeModule = button.dataset.module;
         $("#globalSearch").value = "";
         $("#searchResults").classList.add("hidden");
@@ -3997,7 +4143,7 @@
     function moduleTabs() {
       return `
         <div class="app-tabs">
-          ${modules.filter(([id]) => canAccess(id)).map(([id, label, iconName]) => `<button type="button" class="${activeModule === id ? "active" : ""}" data-module="${id}">${icon(iconName)}<span>${tabLabel(label)}</span></button>`).join("")}
+          ${modules.filter(([id]) => canAccess(id) || moduleUpsellLocked(id)).map(([id, label, iconName]) => moduleButtonHtml(id, tabLabel(label), iconName)).join("")}
         </div>
       `;
     }
@@ -5428,6 +5574,7 @@
         $("#searchResults").classList.add("hidden");
         renderApp();
       }));
+      $$("[data-upsell]").forEach(button => button.addEventListener("click", () => showModuleUpsell(button.dataset.upsell)));
       $("#profileSettingsForm")?.addEventListener("submit", saveProfileSettings);
       $("#calendarSettingsForm")?.addEventListener("submit", saveCalendarSettings);
       $("#whatsappSettingsForm")?.addEventListener("submit", saveWhatsappSettings);
@@ -6834,7 +6981,7 @@
         return;
       }
       if (cloudEnabled()) {
-        const shouldResetCloud = confirm("Não há senha inicial salva para este login no Supabase. Deseja definir uma nova senha agora para poder visualizar depois?");
+        const shouldResetCloud = confirm("Por segurança, senhas de contas na nuvem não ficam salvas em texto simples — não é possível visualizar a atual. Deseja definir uma nova senha agora? Você vai precisar anotá-la e repassar para a pessoa, pois não dá para ver de novo depois.");
         if (shouldResetCloud) changeUserPassword(id);
         return;
       }
