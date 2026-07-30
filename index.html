@@ -1392,6 +1392,39 @@
       padding: 22px;
     }
 
+    .empty-cta {
+      display: grid;
+      gap: 12px;
+      place-items: center;
+      min-height: 190px;
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+    }
+
+    .empty-cta-ico {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+      color: var(--accent);
+    }
+
+    .empty-cta-ico svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .empty-cta strong {
+      color: var(--text);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
     .settings-grid {
       display: grid;
       grid-template-columns: minmax(0, 0.8fr) minmax(360px, 1.2fr);
@@ -2505,6 +2538,10 @@
       }
     }
 
+    .nav-toggle-btn {
+      display: none;
+    }
+
     @media (max-width: 860px) {
       .shell {
         grid-template-columns: 1fr;
@@ -2516,8 +2553,41 @@
         max-height: none;
       }
 
+      .nav-toggle-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        gap: 8px;
+        min-height: 40px;
+        padding: 0 12px;
+        margin-bottom: 10px;
+        border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--accent) 10%, transparent);
+        color: var(--accent);
+        font-size: 0.78rem;
+        font-weight: 760;
+        cursor: pointer;
+      }
+
+      .nav-toggle-btn svg {
+        width: 16px;
+        height: 16px;
+        transition: transform 150ms ease;
+      }
+
+      .sidebar.nav-open .nav-toggle-btn svg {
+        transform: rotate(180deg);
+      }
+
       .nav {
+        display: none;
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .sidebar.nav-open .nav {
+        display: grid;
       }
 
       .content {
@@ -2653,6 +2723,10 @@
           <span>Centro de gestão</span>
         </div>
       </div>
+      <button id="navToggleBtn" type="button" class="nav-toggle-btn">
+        <span>Módulos</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
       <nav id="nav" class="nav"></nav>
       <div class="sidebar-footer">
         <div id="userPill" class="user-pill"></div>
@@ -3544,6 +3618,7 @@
       $("#signupRequestBtn")?.addEventListener("click", openSignupRequestModal);
       $("#forgotPasswordBtn")?.addEventListener("click", handleForgotPassword);
       $("#resumePaymentBtn")?.addEventListener("click", openResumePaymentModal);
+      $("#navToggleBtn")?.addEventListener("click", () => $(".sidebar")?.classList.toggle("nav-open"));
 
       if (!pendingAuthHash && new URLSearchParams(location.search).get("signup") === "1") {
         history.replaceState(null, "", location.pathname);
@@ -4089,6 +4164,7 @@
         activeModule = button.dataset.module;
         $("#globalSearch").value = "";
         $("#searchResults").classList.add("hidden");
+        $(".sidebar")?.classList.remove("nav-open");
         renderApp();
       }));
     }
@@ -4408,7 +4484,7 @@
                 </div>
               </article>
             `;
-          }).join("") || emptyBlock("Nenhum projeto cadastrado.")}
+          }).join("") || emptyBlock("Nenhum projeto por aqui ainda.", "Novo projeto", "project")}
         </div>
       `;
     }
@@ -4571,7 +4647,7 @@
               <section class="kanban-column" data-drop-lead="${stage}">
                 <div class="column-head"><h3>${stage}</h3><span class="chip">${leads.length}</span></div>
                 <div class="column-list">
-                  ${leads.map(leadCard).join("") || `<div class="empty">Sem leads</div>`}
+                  ${leads.map(leadCard).join("") || (stage === "Novo" ? emptyBlock("Nenhum lead por aqui ainda.", "Novo lead", "lead") : `<div class="empty">Sem leads</div>`)}
                 </div>
               </section>
             `;
@@ -4891,7 +4967,7 @@
                 </div>
               </article>
             `;
-          }).join("") || emptyBlock("Nenhum cliente cadastrado.")}
+          }).join("") || emptyBlock("Nenhum cliente por aqui ainda.", "Novo cliente", "client")}
         </div>
       `;
     }
@@ -4915,7 +4991,7 @@
                 ${canManage() ? `<button class="btn danger" type="button" data-delete="production" data-id="${item.id}" data-icon="trash">Excluir</button>` : ""}
               </div>
             </article>
-          `).join("") || emptyBlock("Nenhuma produção cadastrada.")}
+          `).join("") || emptyBlock("Nenhuma produção por aqui ainda.", "Nova produção", "production")}
         </div>
       `;
     }
@@ -5061,7 +5137,7 @@
             return `
               <article class="item-card">
                 <div class="card-head">
-                  <div><strong>${escapeHtml(employee.name)}</strong><div class="meta">${escapeHtml(employee.roleName || "Função não informada")}</div></div>
+                  <div><strong><span class="sq" style="--dot-color:${colorForId(employee.id, projectPalette)}"></span> ${escapeHtml(employee.name)}</strong><div class="meta">${escapeHtml(employee.roleName || "Função não informada")}</div></div>
                   <span class="chip accent">${money(finalSalary)}</span>
                 </div>
                 <div class="meta"><span>Salário: ${money(employee.salary)}</span><span>Vales: ${money(employee.advance)}</span><span>Faltas: ${employee.absenceCount || 0}</span></div>
@@ -5073,7 +5149,7 @@
                 </div>
               </article>
             `;
-          }).join("") || emptyBlock("Nenhum funcionário cadastrado.")}
+          }).join("") || emptyBlock("Nenhum funcionário por aqui ainda.", "Novo funcionário", "employee")}
         </div>
         ${isAdmin() ? `<section class="panel" style="margin-top:14px">${clientAdminShortcut()}</section>` : ""}
       `;
@@ -5360,7 +5436,7 @@
         <article class="item-card draggable" draggable="true" data-lead-card="${lead.id}">
           <div class="card-head">
             <div>
-              <strong>${escapeHtml(lead.name || lead.business || "Lead sem nome")}</strong>
+              <strong><span class="sq" style="--dot-color:${colorForId(lead.id, projectPalette)}"></span> ${escapeHtml(lead.name || lead.business || "Lead sem nome")}</strong>
               <div class="meta">${escapeHtml(lead.contact || "Sem responsavel")} • ${escapeHtml(lead.source || "Origem nao informada")}</div>
             </div>
             ${statusChip(lead.stage || "Novo")}
@@ -5416,8 +5492,17 @@
       return `<div class="empty">${text}</div>`;
     }
 
-    function emptyBlock(text) {
-      return `<div class="empty" style="grid-column:1/-1">${text}</div>`;
+    function emptyBlock(text, ctaLabel, dataOpen) {
+      if (!ctaLabel || !dataOpen || !canManage()) {
+        return `<div class="empty" style="grid-column:1/-1">${text}</div>`;
+      }
+      return `
+        <div class="empty-cta" style="grid-column:1/-1">
+          <div class="empty-cta-ico">${icon("plus")}</div>
+          <strong>${text}</strong>
+          <button class="btn accent" type="button" data-open="${dataOpen}">${ctaLabel}</button>
+        </div>
+      `;
     }
 
     function barRow(label, value, max, display) {
@@ -5572,6 +5657,7 @@
         activeModule = button.dataset.module;
         $("#globalSearch").value = "";
         $("#searchResults").classList.add("hidden");
+        $(".sidebar")?.classList.remove("nav-open");
         renderApp();
       }));
       $$("[data-upsell]").forEach(button => button.addEventListener("click", () => showModuleUpsell(button.dataset.upsell)));
